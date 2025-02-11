@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/masahiro0000/BizMatch/internal/interface/handler"
 )
 
 // Router encapsulates the Gin engine and the HTTP server
@@ -14,7 +15,7 @@ type Router struct {
 }
 
 // NewRouter creates and configures a new router instance
-func NewRouter() *Router {
+func NewRouter(userHandler *handler.UserHandler) *Router {
 	r := gin.Default()
 
 	r.Static("/css", "./web/css")
@@ -26,6 +27,10 @@ func NewRouter() *Router {
 		c.HTML(http.StatusOK, "top.html", gin.H{
 		})
 	})
+
+	// Initialize user-related endpoint.
+	userGroup := r.Group("/users")
+    UserRouter(userGroup, userHandler)
 
 	return &Router{
 		engine: r,
