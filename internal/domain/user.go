@@ -10,7 +10,7 @@ const MinPasswordLength = 8
 
 type User struct {
 	Username 		string
-	DisplayName 	string
+	DisplayName 	string `db:"display_name"`
 	Password 		string
 }
 

@@ -2,10 +2,14 @@ package app
 
 import (
 	"context"
+	"encoding/gob"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/joho/godotenv"
+	"github.com/masahiro0000/BizMatch/internal/domain"
 	"github.com/masahiro0000/BizMatch/internal/infrastructure/db"
 	"github.com/masahiro0000/BizMatch/internal/infrastructure/repository"
 	"github.com/masahiro0000/BizMatch/internal/infrastructure/router"
@@ -17,12 +21,21 @@ func Run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
+	// Load environment variables from the .env file.
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	// Initialize the database connection
 	dbConn, err := db.InitDB()
 	if err != nil {
 		return err
 	}
 	defer dbConn.Close()
+
+	// Register the User struct with the gob package to enable session storage.
+	gob.Register(&domain.User{})
 
 	// Initialize user-related functionality
 	userRepo := repository.NewUserRepositoryImpl(dbConn)
