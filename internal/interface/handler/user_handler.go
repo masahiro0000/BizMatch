@@ -122,3 +122,14 @@ func (h *UserHandler) ShowMypage(c *gin.Context) {
 		"user": currentUser,
 	})
 }
+
+func (h *UserHandler) Logout(c *gin.Context) {
+	session := sessions.Default(c)
+	session.Clear()
+	if err := session.Save(); err != nil {
+		c.String(http.StatusInternalServerError, "セッションの削除に失敗しました")
+		return
+	}
+
+	c.Redirect(http.StatusFound, "users/login")
+}

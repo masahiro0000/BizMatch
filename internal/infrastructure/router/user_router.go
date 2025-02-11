@@ -18,6 +18,9 @@ func UserRouter(rg *gin.RouterGroup, userHandler *handler.UserHandler) {
 	rg.GET("/login", userHandler.ShowLoginForm)
 	rg.POST("/login", userHandler.Login)
 
+	// Route for logout.
+	rg.POST("/logout", userHandler.Logout)
+
 	// Route for mypage
 	rg.GET("/mypage", userHandler.ShowMypage)
 }
