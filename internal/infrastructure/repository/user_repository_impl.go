@@ -24,7 +24,7 @@ func NewUserRepositoryImpl(db *sqlx.DB) domain.UserRepository {
 // CreateUser inserts a new user into the database.
 func (r *userRepositoryImpl) CreateUser(user *domain.User) error {
 	_, err := r.db.Exec("INSERT INTO users (username, display_name, password) VALUES ($1, $2, $3)",
-						user.Username, user.DisplayName, user.HashedPassword)
+						user.Username, user.DisplayName, user.Password)
 	if err != nil {
 		var pqErr *pq.Error
 		// Check if the error is a PostgreSQL error for duplicate entries.

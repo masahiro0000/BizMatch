@@ -11,7 +11,7 @@ const MinPasswordLength = 8
 type User struct {
 	Username 		string
 	DisplayName 	string
-	HashedPassword 	string
+	Password 		string
 }
 
 var (
@@ -42,7 +42,7 @@ func NewUser(username, displayName, password string) (*User, error) {
 	return &User{
 		Username: 		username,
 		DisplayName: 	displayName,
-		HashedPassword:	hashedPassword,
+		Password:		hashedPassword,
 	}, nil
 }
 
