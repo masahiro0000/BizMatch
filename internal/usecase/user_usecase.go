@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/masahiro0000/BizMatch/internal/domain"
+	"github.com/masahiro0000/BizMatch/internal/infrastructure/repository"
 )
 
 type UserUsecase struct {
@@ -43,4 +44,28 @@ func (u *UserUsecase) Signup(c *gin.Context, username, displayName, password str
 		return err
 	}
 	return nil
+}
+
+func (u *UserUsecase) Login(c *gin.Context, username, password string) (*domain.User, error) {
+	var user *domain.User
+	var err error
+
+	// Attempt to retrieve the user by username from the repository.
+	user, err = u.userRepo.GetUserByUsername(username)
+	if err != nil {
+		// Return different error message based on the type of error encountered.
+		switch {
+		case errors.Is(err, repository.ErrUserNotFound):
+			return nil, repository.ErrUserNotFound
+		default:
+			return nil, errors.New("ログイン中にエラーが発生しました")
+		}
+	}
+
+	// Verify the provided password against the user's stored credentials.
+	if err := user.VerifyPassword(password); err != nil {
+		return nil, domain.ErrIncorrectPassword
+	}
+
+	return user, nil
 }

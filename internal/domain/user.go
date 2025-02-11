@@ -11,13 +11,14 @@ const MinPasswordLength = 8
 type User struct {
 	Username 		string
 	DisplayName 	string
-	HashedPassword 	string
+	Password 		string
 }
 
 var (
 	ErrInvalidInput		 = errors.New("入力内容が不正です")
 	ErrPasswordTooShort  = errors.New("パスワードは8文字以上必要です")
 	ErrUserAlreadyExists = errors.New("ユーザーは既に存在します")
+	ErrIncorrectPassword = errors.New("パスワードが一致しません")
 )
 
 // Create a new user instance by validating the inputs and hashing the password.
@@ -41,7 +42,7 @@ func NewUser(username, displayName, password string) (*User, error) {
 	return &User{
 		Username: 		username,
 		DisplayName: 	displayName,
-		HashedPassword:	hashedPassword,
+		Password:		hashedPassword,
 	}, nil
 }
 
@@ -55,7 +56,10 @@ func hashPassword(password string) (string, error) {
 }
 
 // VerifyPassword compares the provided password with the stored hash.
-func (u *User) VerifyPassword(password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(u.HashedPassword), []byte(password))
-	return err == nil
+func (u *User) VerifyPassword(password string) error {
+	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
+	if err != nil {
+		return ErrIncorrectPassword
+	}
+	return nil
 }
