@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/masahiro0000/BizMatch/internal/domain"
+	"github.com/masahiro0000/BizMatch/internal/infrastructure/repository"
 	"github.com/masahiro0000/BizMatch/internal/usecase"
 )
 
@@ -58,5 +59,41 @@ func (h *UserHandler) Signup(c *gin.Context) {
 
 func (h *UserHandler) ShowRegisterUserInfo(c *gin.Context) {
 	c.HTML(http.StatusOK, "register_user_info.html", gin.H{
+	})
+}
+
+func (h *UserHandler) ShowLoginForm(c *gin.Context) {
+	c.HTML(http.StatusOK, "login.html", gin.H{
+	})
+}
+
+func (h *UserHandler) Login(c *gin.Context) {
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+
+	// Attempt to login using username and password.
+	_, err := h.userUsecase.Login(c, username, password)
+	if err != nil {
+		var status int
+		// Adjust the HTTP status code according to the type of error.
+		switch {
+		case errors.Is(err, repository.ErrUserNotFound) || errors.Is(err, domain.ErrIncorrectPassword):
+			status = http.StatusBadRequest
+		default:
+			status = http.StatusInternalServerError
+		}
+
+		c.HTML(status, "login.html", gin.H{
+			"error": err.Error(),
+			"username": username,
+		})
+	}
+
+	// If successful, redirect the user to their mypage.
+	c.Redirect(http.StatusFound, "/users/mypage")
+}
+
+func (h *UserHandler) ShowMypage(c *gin.Context) {
+	c.HTML(http.StatusOK, "mypage.html", gin.H{
 	})
 }
