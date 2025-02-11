@@ -38,7 +38,7 @@ func (r *userRepositoryImpl) CreateUser(user *domain.User) error {
 
 func (r *userRepositoryImpl) GetUserByUsername(username string) (*domain.User, error) {
 	var user domain.User
-	query := "SELECT username, password FROM users WHERE username = $1"
+	query := "SELECT username, display_name, password FROM users WHERE username = $1"
 
 	// Execute the SQL query using username and map the result to the user variable.
 	if err := r.db.Get(&user, query, username); err != nil {

@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
@@ -14,12 +13,6 @@ var DB *sqlx.DB
 
 // InitDB initializes the database connection using environment variables.
 func InitDB() (*sqlx.DB, error){
-
-	// Load environment variables from the .env file.
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
 
 	// Retrieve the DATABASE_URL from the environment variables.
 	dsn := os.Getenv("DATABASE_URL")

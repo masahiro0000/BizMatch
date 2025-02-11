@@ -3,7 +3,10 @@ package router
 import (
 	"context"
 	"net/http"
+	"os"
 
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/masahiro0000/BizMatch/internal/interface/handler"
 )
@@ -17,6 +20,12 @@ type Router struct {
 // NewRouter creates and configures a new router instance
 func NewRouter(userHandler *handler.UserHandler) *Router {
 	r := gin.Default()
+
+	sessionSecretKey := os.Getenv("SESSION_SECRET_KEY")
+
+	// Create a new session using the secret key.
+	store := cookie.NewStore([]byte(sessionSecretKey))
+	r.Use(sessions.Sessions("bizmatchSession", store))
 
 	r.Static("/css", "./web/css")
 	r.Static("/js", "./web/js")

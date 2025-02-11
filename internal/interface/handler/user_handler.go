@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/masahiro0000/BizMatch/internal/domain"
 	"github.com/masahiro0000/BizMatch/internal/infrastructure/repository"
@@ -72,7 +73,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 	password := c.PostForm("password")
 
 	// Attempt to login using username and password.
-	_, err := h.userUsecase.Login(c, username, password)
+	user, err := h.userUsecase.Login(c, username, password)
 	if err != nil {
 		var status int
 		// Adjust the HTTP status code according to the type of error.
@@ -89,11 +90,35 @@ func (h *UserHandler) Login(c *gin.Context) {
 		})
 	}
 
+	if user != nil {
+		// Create a new session and store the authenticated user data.
+		session := sessions.Default(c)
+		session.Set("user", user)
+
+		// Save the session.
+		if err := session.Save(); err != nil {
+			c.String(http.StatusInternalServerError, "セッション保存エラーが発生しました")
+		}
+	}
+
 	// If successful, redirect the user to their mypage.
 	c.Redirect(http.StatusFound, "/users/mypage")
 }
 
 func (h *UserHandler) ShowMypage(c *gin.Context) {
+	session := sessions.Default(c)
+
+	// Get the user data stored in the session.
+	user := session.Get("user")
+	currentUser, ok := user.(*domain.User)
+
+	// If no user is found in the session, redirect to the login page.
+	if !ok || currentUser == nil {
+		c.Redirect(http.StatusFound, "/users/login")
+		return
+	}
+
 	c.HTML(http.StatusOK, "mypage.html", gin.H{
+		"user": currentUser,
 	})
 }
