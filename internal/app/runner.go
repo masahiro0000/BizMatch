@@ -7,7 +7,10 @@ import (
 	"syscall"
 
 	"github.com/masahiro0000/BizMatch/internal/infrastructure/db"
+	"github.com/masahiro0000/BizMatch/internal/infrastructure/repository"
 	"github.com/masahiro0000/BizMatch/internal/infrastructure/router"
+	"github.com/masahiro0000/BizMatch/internal/interface/handler"
+	"github.com/masahiro0000/BizMatch/internal/usecase"
 )
 
 func Run() error {
@@ -21,8 +24,13 @@ func Run() error {
 	}
 	defer dbConn.Close()
 
+	// Initialize user-related functionality
+	userRepo := repository.NewUserRepositoryImpl(dbConn)
+	userUsecase := usecase.NewUserUsecase(userRepo)
+	userHandler := handler.NewUserHandler(userUsecase)
+
 	// Create a new router instance
-	r := router.NewRouter()
+	r := router.NewRouter(userHandler)
 
 	errCh := make(chan error, 1)
 	// Start the HTTP server in a separate goroutine
