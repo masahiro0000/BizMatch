@@ -18,7 +18,7 @@ type Router struct {
 }
 
 // NewRouter creates and configures a new router instance
-func NewRouter(userHandler *handler.UserHandler) *Router {
+func NewRouter(userHandler *handler.UserHandler, apiHandler *handler.ApiHandler) *Router {
 	r := gin.Default()
 
 	sessionSecretKey := os.Getenv("SESSION_SECRET_KEY")
@@ -40,6 +40,10 @@ func NewRouter(userHandler *handler.UserHandler) *Router {
 	// Initialize user-related endpoint.
 	userGroup := r.Group("/users")
     UserRouter(userGroup, userHandler)
+
+	//Initialize api endpoint.
+	apiGroup := r.Group("/api")
+	ApiRouter(apiGroup, apiHandler)
 
 	return &Router{
 		engine: r,
