@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"errors"
+	"log"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
@@ -38,7 +39,7 @@ func (r *userRepositoryImpl) CreateUser(user *domain.User) error {
 
 func (r *userRepositoryImpl) GetUserByUsername(username string) (*domain.User, error) {
 	var user domain.User
-	query := "SELECT username, display_name, password FROM users WHERE username = $1"
+	query := "SELECT * FROM users WHERE username = $1"
 
 	// Execute the SQL query using username and map the result to the user variable.
 	if err := r.db.Get(&user, query, username); err != nil {
@@ -51,4 +52,34 @@ func (r *userRepositoryImpl) GetUserByUsername(username string) (*domain.User, e
 
 	// If successful, return a pointer to the user.
 	return &user, nil
+}
+
+// RegisterInfo updates the user's information in the database.
+func (r *userRepositoryImpl) RegisterInfo(user *domain.User) error {
+	// SQL query that update the user's information.
+	query := `
+		UPDATE users
+		SET
+			username 	 		= :username,
+			display_name		= :display_name,
+			prefecture_id		= :prefecture_id,
+			industry_id 		= :industry_id,
+			job_id				= :job_id,
+			position_id 		= :position_id,
+			age					= :age,
+			gender				= :gender,
+			photo				= :photo,
+			profile_description	= :profile_description
+		WHERE
+			id = :id
+		`
+
+	// Execute the SQL update query.
+	_, err := r.db.NamedExec(query, user)
+	if err != nil {
+		log.Printf("Failed to update user's information. query:%v, error:%v", query, err)
+		return err
+	}
+
+	return nil
 }

@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"errors"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/masahiro0000/BizMatch/internal/domain"
@@ -68,4 +69,20 @@ func (u *UserUsecase) Login(c *gin.Context, username, password string) (*domain.
 	}
 
 	return user, nil
+}
+
+func (u *UserUsecase) RegisterInfo(user *domain.User) error {
+	// Check username and display name.
+	if err := domain.CheckUsernameDisplayName(user.Username, user.DisplayName); err != nil {
+		log.Printf("Validation failed for username and display name. username:%v ,display name:%v, error:%v",
+			user.Username, user.DisplayName, err)
+		return err
+	}
+
+	// Attempt to update the user's info in the repository.
+	if err := u.userRepo.RegisterInfo(user); err != nil {
+		log.Printf("Failed to update user info in repository. user ID:%d, error:%v", user.ID, err)
+		return err
+	}
+	return nil
 }

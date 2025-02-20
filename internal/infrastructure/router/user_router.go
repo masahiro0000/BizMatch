@@ -12,7 +12,8 @@ func UserRouter(rg *gin.RouterGroup, userHandler *handler.UserHandler) {
 	rg.POST("/signup", userHandler.Signup)
 
 	// Route for presenting additional user registration details.
-	rg.GET("/register_user_info", userHandler.ShowRegisterUserInfo)
+	rg.GET("/register_info", userHandler.ShowRegisterInfo)
+	rg.POST("/register_info", userHandler.RegisterInfo)
 
 	// Route for login.
 	rg.GET("/login", userHandler.ShowLoginForm)
