@@ -9,9 +9,18 @@ import (
 const MinPasswordLength = 8
 
 type User struct {
-	Username 		string
-	DisplayName 	string `db:"display_name"`
-	Password 		string
+	ID 					int64  `db:"id"`
+	Username 			string `db:"username"`
+	DisplayName			string `db:"display_name"`
+	Password 			string `db:"password"`
+	Prefecture			*int64 `db:"prefecture_id"`
+	Industry			*int64 `db:"industry_id"`
+	Job					*int64 `db:"job_id"`
+	Position 			*int64 `db:"position_id"`
+	Age 				*int64 `db:"age"`
+	Gender 				*string `db:"gender"`
+	Photo				*string `db:"photo"`
+	ProfileDescription	*string `db:"profile_description"`
 }
 
 var (
@@ -60,6 +69,14 @@ func (u *User) VerifyPassword(password string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 	if err != nil {
 		return ErrIncorrectPassword
+	}
+	return nil
+}
+
+// CheckUsernameDisplayName validates that both username and display name are not empty.
+func CheckUsernameDisplayName(username string, displayName string) error {
+	if username == "" || displayName == "" {
+		return ErrInvalidInput
 	}
 	return nil
 }

@@ -30,6 +30,9 @@ func NewRouter(userHandler *handler.UserHandler, apiHandler *handler.ApiHandler)
 	r.Static("/css", "./web/css")
 	r.Static("/js", "./web/js")
 
+	// This configuration is used to store and serve user profile photos and other static assets.
+	r.Static("/static", "./web/static")
+
 	r.LoadHTMLGlob("./web/templates/*")
 
 	r.GET("/top", func(c *gin.Context) {
