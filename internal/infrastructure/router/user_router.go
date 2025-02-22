@@ -24,4 +24,8 @@ func UserRouter(rg *gin.RouterGroup, userHandler *handler.UserHandler) {
 
 	// Route for mypage
 	rg.GET("/mypage", userHandler.ShowMypage)
+
+	// Route for changing password.
+	rg.GET("/change_password", userHandler.ShowChangePasswordForm)
+	rg.POST("/change_password", userHandler.UpdatePassword)
 }

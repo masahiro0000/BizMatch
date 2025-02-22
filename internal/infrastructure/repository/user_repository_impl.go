@@ -37,6 +37,21 @@ func (r *userRepositoryImpl) CreateUser(user *domain.User) error {
 	return nil
 }
 
+// GetUserByID retrieve a user from the database based on user ID.
+func (r *userRepositoryImpl) GetUserByID(userID int64) (*domain.User, error) {
+	var user domain.User
+	query := "SELECT * FROM users WHERE id = $1"
+
+	// Execute the SQL query using userID and map the result to the user variable.
+	if err := r.db.Get(&user, query, userID); err != nil {
+		return nil, err
+	}
+
+	// If successful, return a pointer to the user.
+	return &user, nil
+}
+
+// GetUserByUsername retrieve a user from the database based on username.
 func (r *userRepositoryImpl) GetUserByUsername(username string) (*domain.User, error) {
 	var user domain.User
 	query := "SELECT * FROM users WHERE username = $1"
@@ -78,6 +93,19 @@ func (r *userRepositoryImpl) RegisterInfo(user *domain.User) error {
 	_, err := r.db.NamedExec(query, user)
 	if err != nil {
 		log.Printf("Failed to update user's information. query:%v, error:%v", query, err)
+		return err
+	}
+
+	return nil
+}
+
+// UpdatePassword updates the user's password in the database.
+func (r *userRepositoryImpl) UpdatePassword(userID int64, hashedPassword string) error {
+	query := "UPDATE users SET password = $1 WHERE id = $2"
+	_, err := r.db.Exec(query, hashedPassword, userID)
+
+	if err != nil {
+		log.Printf("Fail to update password. userID:%v, error:%v", userID, err)
 		return err
 	}
 
