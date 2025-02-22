@@ -86,3 +86,40 @@ func (u *UserUsecase) RegisterInfo(user *domain.User) error {
 	}
 	return nil
 }
+
+func (u *UserUsecase) UpdatePassword(userID int64, oldPassword, newPassword, confirmPassword string) error {
+	// Retrieve the user by ID from the repository.
+	user, err := u.userRepo.GetUserByID(userID)
+	if err != nil {
+		return err
+	}
+
+	// Verify that the provided old password matches the user's current password.
+	if err := user.VerifyPassword(oldPassword); err != nil {
+		return domain.ErrOldPasswordMismatch
+	}
+
+	// Check if the new password matches the confirmation password.
+	if newPassword != confirmPassword {
+		return domain.ErrNewPasswordMismatch
+	}
+
+	// Ensure that new password meets the minimum length requirement.
+	if len(newPassword) < domain.MinPasswordLength {
+		return domain.ErrPasswordTooShort
+	}
+
+	// Hash the new password for security.
+	hashedPassword, err := domain.HashPassword(newPassword)
+	if err != nil {
+		return err
+	}
+
+	// Update the user's password in the repository with the hashed new password.
+	err = u.userRepo.UpdatePassword(user.ID, hashedPassword)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

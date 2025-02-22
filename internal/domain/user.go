@@ -24,10 +24,12 @@ type User struct {
 }
 
 var (
-	ErrInvalidInput		 = errors.New("入力内容が不正です")
-	ErrPasswordTooShort  = errors.New("パスワードは8文字以上必要です")
-	ErrUserAlreadyExists = errors.New("ユーザーは既に存在します")
-	ErrIncorrectPassword = errors.New("パスワードが一致しません")
+	ErrInvalidInput		 	= errors.New("入力内容が不正です")
+	ErrPasswordTooShort  	= errors.New("パスワードは8文字以上必要です")
+	ErrUserAlreadyExists 	= errors.New("ユーザーは既に存在します")
+	ErrIncorrectPassword 	= errors.New("パスワードが一致しません")
+	ErrOldPasswordMismatch	= errors.New("古いパスワードが一致しません")
+	ErrNewPasswordMismatch	= errors.New("新しいパスワードが一致しません")
 )
 
 // Create a new user instance by validating the inputs and hashing the password.
@@ -43,7 +45,7 @@ func NewUser(username, displayName, password string) (*User, error) {
 	}
 
 	// Generate a bcrypt hash of the password.
-	hashedPassword, err := hashPassword(password)
+	hashedPassword, err := HashPassword(password)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +58,7 @@ func NewUser(username, displayName, password string) (*User, error) {
 }
 
 // hashPassword takes a plaintext password and returns its bcrypt hash.
-func hashPassword(password string) (string, error) {
+func HashPassword(password string) (string, error) {
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", err

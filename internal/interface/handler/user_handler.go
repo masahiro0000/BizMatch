@@ -264,3 +264,54 @@ func (h *UserHandler) RegisterInfo(c *gin.Context) {
 	util.SetCurrentUser(c, user)
 	c.Redirect(http.StatusFound, "/users/mypage")
 }
+
+func (h *UserHandler) ShowChangePasswordForm(c *gin.Context) {
+	// Retrieve the current user from the session.
+	currentUser, err := util.GetCurrentUser(c)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/users/login")
+		return
+	}
+
+	c.HTML(http.StatusOK, "change_password.html", gin.H{
+		"user": currentUser,
+	})
+}
+
+func (h *UserHandler) UpdatePassword(c *gin.Context) {
+	// Retrieve the current user from the session.
+	currentUser, err := util.GetCurrentUser(c)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/users/login")
+		return
+	}
+
+	// Extract the old password, new password, and password confirmation from the POST form.
+	oldPassword := c.PostForm("old_password")
+	newPassword := c.PostForm("new_password")
+	confirmPassword := c.PostForm("confirm_password")
+
+	// Attempt to update the user's password using the provided information.
+	err = h.userUsecase.UpdatePassword(currentUser.ID, oldPassword, newPassword, confirmPassword)
+	if err != nil {
+		log.Printf("Fail to update password. error:%v", err)
+		status := http.StatusInternalServerError
+
+		// If the error is related to the new password being too short, new password mismatches confirmation password or
+		// the provided old password mismatches the user's current password, use a bad request status.
+		if errors.Is(err, domain.ErrPasswordTooShort) ||
+			errors.Is(err, domain.ErrNewPasswordMismatch) ||
+			errors.Is(err, domain.ErrOldPasswordMismatch){
+			status = http.StatusBadRequest
+		}
+
+		c.HTML(status, "change_password.html", gin.H{
+			"user": currentUser,
+			"error": err.Error(),
+		})
+		return
+	}
+
+	// On successful password update, redirect the user to their mypage.
+	c.Redirect(http.StatusFound, "/users/mypage")
+}
