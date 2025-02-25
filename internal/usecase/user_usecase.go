@@ -123,3 +123,7 @@ func (u *UserUsecase) UpdatePassword(userID int64, oldPassword, newPassword, con
 
 	return nil
 }
+
+func (u *UserUsecase) SearchUsers(filter *domain.UserSearchFilter) ([]*domain.User, error) {
+	return u.userRepo.SearchUsers(filter)
+}
