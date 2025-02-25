@@ -8,19 +8,36 @@ import (
 
 const MinPasswordLength = 8
 
+// User represents a user account in the system.
 type User struct {
 	ID 					int64  `db:"id"`
 	Username 			string `db:"username"`
 	DisplayName			string `db:"display_name"`
 	Password 			string `db:"password"`
 	Prefecture			*int64 `db:"prefecture_id"`
+	PrefectureName		*string `db:"prefecture"`
 	Industry			*int64 `db:"industry_id"`
+	IndustryName		*string `db:"industry"`
 	Job					*int64 `db:"job_id"`
+	JobName				*string `db:"job"`
 	Position 			*int64 `db:"position_id"`
+	PositionName		*string `db:"position"`
 	Age 				*int64 `db:"age"`
 	Gender 				*string `db:"gender"`
 	Photo				*string `db:"photo"`
 	ProfileDescription	*string `db:"profile_description"`
+}
+
+// UserSearchFilter holds criteria used to filter and search for specific users.
+type UserSearchFilter struct {
+	Prefectures		[]*int64 `db:"prefecture_id"`
+	Industries		[]*int64 `db:"industry_id"`
+	Jobs			[]*int64 `db:"job_id"`
+	Positions		[]*int64 `db:"position_id"`
+	Ages			[]*int64 `db:"age"`
+	AgeGroups		[]int
+	Genders			[]*string `db:"gender"`
+	ExcludeUserID	*int64
 }
 
 var (

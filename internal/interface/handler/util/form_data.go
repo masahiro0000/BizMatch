@@ -4,8 +4,8 @@ import "strconv"
 
 // GenerateAgeList returns a slice of integers representing ages from 20 to 80.
 func GenerateAgeList() []int {
-	ages := make([]int, 0, 61)
-	for age := 20; age <= 80; age++ {
+	ages := make([]int, 0, 40)
+	for age := 20; age <= 59; age++ {
 		ages = append(ages, age)
 	}
 	return ages
@@ -37,4 +37,35 @@ func DerefInt64(p *int64) int64 {
 		return 0
 	}
 	return *p
+}
+
+// ParseNullableInts takes a slice of string values and
+// attempt to parse each non-empty string as an int64.
+func ParseNullableInts(strs []string) ([]*int64, error) {
+	var result []*int64
+	for _, s := range strs {
+		if s == "" {
+			continue
+		}
+		v, err := strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, &v)
+	}
+	return result, nil
+}
+
+// ParseStringsAsPtrs takes a slice of string values,
+// and for each non-empty string.
+func ParseStringsAsPtrs(strs []string) []*string {
+	var result []*string
+	for _, s := range strs {
+		if s == "" {
+			continue
+		}
+		copy := s
+		result = append(result, &copy)
+	}
+	return result
 }

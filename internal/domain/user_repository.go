@@ -6,4 +6,5 @@ type UserRepository interface {
 	GetUserByUsername(username string) (*User, error)
 	RegisterInfo(user *User) error
 	UpdatePassword(userID int64, hashedPassword string) error
+	SearchUsers(filter *UserSearchFilter) ([]*User, error)
 }

@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"strconv"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -314,4 +315,101 @@ func (h *UserHandler) UpdatePassword(c *gin.Context) {
 
 	// On successful password update, redirect the user to their mypage.
 	c.Redirect(http.StatusFound, "/users/mypage")
+}
+
+func (h *UserHandler) ShowSearchUsersForm(c *gin.Context) {
+	// Retrieve the current user from the session.
+	currentUser, err := util.GetCurrentUser(c)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/users/login")
+		return
+	}
+
+	// Generate a list of ages and gender for display.
+	ageGroups := []int{20, 30, 40, 50}
+	genders := util.GenerateGenderList()
+
+	c.HTML(http.StatusOK, "search_users.html", gin.H{
+		"user": currentUser,
+		"ageGroups": ageGroups,
+		"genders": genders,
+	})
+}
+
+func (h *UserHandler) SearchUsers(c *gin.Context) {
+	// Retrieve the current user from the session.
+	currentUser, err := util.GetCurrentUser(c)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/users/login")
+		return
+	}
+
+	// Retrieve search criteria from the form input as arrays of strings.
+	prefectureStrs := c.PostFormArray("prefectures[]")
+	industryStrs := c.PostFormArray("industries[]")
+	jobStrs := c.PostFormArray("jobs[]")
+	positionStrs := c.PostFormArray("positions[]")
+	genderStrs := c.PostFormArray("genders[]")
+	ageGroupsStr := c.PostFormArray("age_groups[]")
+
+	// Convert age group strings to integers.
+	var ageGroups []int
+	for _, ag := range ageGroupsStr {
+		v, err := strconv.Atoi(ag)
+		if err == nil {
+			ageGroups = append(ageGroups, v)
+		}
+	}
+
+	var filter domain.UserSearchFilter
+
+	// Parse the IDs from string array to integer array.
+	p, err := util.ParseNullableInts(prefectureStrs)
+	if err != nil {
+		c.String(http.StatusBadRequest, "都道府県IDに不正な値があります: %v", err)
+		return
+	}
+	filter.Prefectures = p
+
+	i, err := util.ParseNullableInts(industryStrs)
+	if err != nil {
+		c.String(http.StatusBadRequest, "業種IDに不正な値があります: %v", err)
+		return
+	}
+	filter.Industries = i
+
+	j, err := util.ParseNullableInts(jobStrs)
+	if err != nil {
+		c.String(http.StatusBadRequest, "職種IDに不正な値があります: %v", err)
+		return
+	}
+	filter.Jobs = j
+
+	pos, err := util.ParseNullableInts(positionStrs)
+	if err != nil {
+		c.String(http.StatusBadRequest, "役職IDに不正な値があります: %v", err)
+		return
+	}
+	filter.Positions = pos
+
+	// Assign the age groups and gender filter.
+	filter.AgeGroups = ageGroups
+	filter.Genders = util.ParseStringsAsPtrs(genderStrs)
+
+	// Exclude the current user from the search result.
+	filter.ExcludeUserID = &currentUser.ID
+
+	// Perform the user search using the specified filters.
+	users, err := h.userUsecase.SearchUsers(&filter)
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "search_users.html", gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	c.HTML(http.StatusOK, "search_result.html", gin.H{
+		"currentUser": currentUser,
+		"users": users,
+	})
 }
