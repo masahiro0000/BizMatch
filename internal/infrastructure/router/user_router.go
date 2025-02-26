@@ -32,4 +32,7 @@ func UserRouter(rg *gin.RouterGroup, userHandler *handler.UserHandler) {
 	// Route for searching users.
 	rg.GET("/search_users", userHandler.ShowSearchUsersForm)
 	rg.POST("/search_users", userHandler.SearchUsers)
+
+	// Route for user detail.
+	rg.GET("/detail/:username", userHandler.ShowUserDetail)
 }

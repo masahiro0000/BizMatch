@@ -127,3 +127,11 @@ func (u *UserUsecase) UpdatePassword(userID int64, oldPassword, newPassword, con
 func (u *UserUsecase) SearchUsers(filter *domain.UserSearchFilter) ([]*domain.User, error) {
 	return u.userRepo.SearchUsers(filter)
 }
+
+func (u *UserUsecase) GetUserByUsername(username string) (*domain.User, error) {
+	user, err := u.userRepo.GetUserByUsername(username)
+	if err != nil{
+		return nil, err
+	}
+	return user, nil
+}

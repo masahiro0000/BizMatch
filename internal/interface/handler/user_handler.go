@@ -413,3 +413,32 @@ func (h *UserHandler) SearchUsers(c *gin.Context) {
 		"users": users,
 	})
 }
+
+func (h *UserHandler) ShowUserDetail(c *gin.Context) {
+	// Retrieve the current user from the session.
+	currentUser, err := util.GetCurrentUser(c)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/users/login")
+		return
+	}
+
+	// Get the "username" parameter from the URL.
+	username := c.Param("username")
+	if username == "" {
+		c.String(http.StatusBadRequest, "ユーザーIDが取得できませんでした")
+		return
+	}
+
+	// Retrieve the user using provided username.
+	user, err := h.userUsecase.GetUserByUsername(username)
+	if err != nil {
+		c.String(http.StatusBadRequest, "ユーザーが見つかりません")
+		log.Printf("fail to get user by userID. error:%v", err)
+		return
+	}
+
+	c.HTML(http.StatusOK, "user_detail.html", gin.H{
+		"currentUser": currentUser,
+		"user": user,
+	})
+}
