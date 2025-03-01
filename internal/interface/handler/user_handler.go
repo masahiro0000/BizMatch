@@ -433,7 +433,7 @@ func (h *UserHandler) ShowUserDetail(c *gin.Context) {
 	user, err := h.userUsecase.GetUserByUsername(username)
 	if err != nil {
 		c.String(http.StatusBadRequest, "ユーザーが見つかりません")
-		log.Printf("fail to get user by userID. error:%v", err)
+		log.Printf("fail to get user by username. error:%v", err)
 		return
 	}
 

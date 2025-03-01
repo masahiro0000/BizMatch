@@ -135,3 +135,11 @@ func (u *UserUsecase) GetUserByUsername(username string) (*domain.User, error) {
 	}
 	return user, nil
 }
+
+func (u *UserUsecase) GetUserByID(userID int64) (*domain.User, error) {
+	user, err := u.userRepo.GetUserByID(userID)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
