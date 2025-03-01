@@ -47,8 +47,16 @@ func Run() error {
 	apiUsecase := usecase.NewApiUsecase(apiRepo)
 	apiHandler := handler.NewApiHandler(apiUsecase)
 
+	// Initialize match functionality
+	matchRepo := repository.NewMatchRepositoryImpl(dbConn)
+
+	// Initialize like functionality
+	likeRepo := repository.NewLikeRepositoryImpl(dbConn)
+	likeUsecase := usecase.NewLikeUsecase(likeRepo, matchRepo)
+	likeHandler := handler.NewLikeHandler(likeUsecase, userUsecase)
+
 	// Create a new router instance
-	r := router.NewRouter(userHandler, apiHandler)
+	r := router.NewRouter(userHandler, apiHandler, likeHandler)
 
 	errCh := make(chan error, 1)
 	// Start the HTTP server in a separate goroutine
