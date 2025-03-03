@@ -19,13 +19,25 @@ func NewLikeRepositoryImpl(db *sqlx.DB) domain.LikeRepository {
 }
 
 // CreateLike inserts a new like record into the database.
-func (r *likeRepositoryImpl) CreateLike(fromUserID, toUserID int64, status string) error{
+func (r *likeRepositoryImpl) CreateLikeRecord(fromUserID, toUserID int64, status string) error{
 	now := time.Now()
 	query := `
 		INSERT INTO likes (from_user_id, to_user_id, status, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5)
 	`
 	_, err := r.db.Exec(query, fromUserID, toUserID, status, now, now)
+	return err
+}
+
+// UpdateLikeRecord updates a record into the database.
+func (r *likeRepositoryImpl) UpdateLikeRecord(fromUserID, toUserID int64, status string) error {
+	now := time.Now()
+	query := `
+		UPDATE likes
+		SET status = $1, updated_at = $2
+		WHERE from_user_id = $3 AND to_user_id = $4
+	`
+	_, err := r.db.Exec(query, status, now, fromUserID, toUserID)
 	return err
 }
 

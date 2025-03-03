@@ -7,5 +7,8 @@ import (
 
 func LikeRouter(rg *gin.RouterGroup, likeHandler *handler.LikeHandler) {
 	// Route for sending like.
-	rg.POST("/:id/like", likeHandler.SendLike)
+	rg.POST("/:id/like", likeHandler.Like)
+
+	// Route for canceling like.
+	rg.POST("/:id/cancel", likeHandler.Cancel)
 }

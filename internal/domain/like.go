@@ -16,9 +16,11 @@ type Like struct {
 
 // Predefined errors related to like functionality.
 var (
-	ErrSelfLike = errors.New("自分自身にはいいねできません")
+	ErrSelfLikeAndCancel = errors.New("自分自身にはいいねやキャンセルはできません")
 	ErrAlreadyLike = errors.New("既にいいね済みです")
+	ErrAlreadyCancel = errors.New("既にキャンセル済みです")
 	ErrUserIDNotFound = errors.New("いいね対象のユーザーIDが取得できませんでした。ユーザー検索からやり直してください。")
 	ErrGetUserInfoFailed = errors.New("ユーザー情報の取得に失敗しました。ユーザー検索からやり直してください。")
 	ErrSendLikeFailed = errors.New("いいね送信に失敗しました")
+	ErrCancelLikeNotFound = errors.New("キャンセル対象のいいねが存在しないか、既にキャンセルされています")
 )
