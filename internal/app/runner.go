@@ -52,7 +52,7 @@ func Run() error {
 
 	// Initialize like functionality
 	likeRepo := repository.NewLikeRepositoryImpl(dbConn)
-	likeUsecase := usecase.NewLikeUsecase(likeRepo, matchRepo)
+	likeUsecase := usecase.NewLikeUsecase(likeRepo, matchRepo, userRepo)
 	likeHandler := handler.NewLikeHandler(likeUsecase, userUsecase)
 
 	// Create a new router instance

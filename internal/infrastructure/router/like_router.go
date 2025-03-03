@@ -11,4 +11,7 @@ func LikeRouter(rg *gin.RouterGroup, likeHandler *handler.LikeHandler) {
 
 	// Route for canceling like.
 	rg.POST("/:id/cancel", likeHandler.Cancel)
+
+	// Route for showing users who send like.
+	rg.GET("/:id/receive_like", likeHandler.ReceivedLikes)
 }
