@@ -7,15 +7,18 @@ import (
 type LikeUsecase struct {
 	likeRepo	domain.LikeRepository
 	matchRepo	domain.MatchRepository
+	userRepo	domain.UserRepository
 }
 
 func NewLikeUsecase(
 	likeRepo domain.LikeRepository,
 	matchRepo domain.MatchRepository,
+	userRepo domain.UserRepository,
 ) *LikeUsecase {
 	return &LikeUsecase{
 		likeRepo:	likeRepo,
 		matchRepo:	matchRepo,
+		userRepo: 	userRepo,
 	}
 }
 
@@ -107,4 +110,24 @@ func (u *LikeUsecase) Cancel(fromUserID, toUserID int64) error {
 		}
 	}
 	return nil
+}
+
+// GetReceivedLikes retrieves a list of users who have liked the specified user.
+func (u *LikeUsecase) GetReceivedLikes(toUserID int64) ([]*domain.User, error) {
+	// Retrieve the list of user IDs who have liked the target user.
+	fromUserIDs, err := u.likeRepo.GetFromUserIDsWhoLiked(toUserID)
+	if err != nil {
+		return nil, err
+	}
+
+	var users []*domain.User
+	// For each user ID, fetch the complete user information.
+	for _, fromUserID := range fromUserIDs {
+		user, err := u.userRepo.GetUserByID(fromUserID)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
 }

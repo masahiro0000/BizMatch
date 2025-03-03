@@ -59,3 +59,31 @@ func (r *likeRepositoryImpl) GetLike(fromUserID, toUserID int64) (*domain.Like, 
 	}
 	return &l, nil
 }
+
+// GetFromUserIDsWhoLiked receives the IDs of users who have liked the specified user(toUserID).
+func (r *likeRepositoryImpl) GetFromUserIDsWhoLiked(toUserID int64) ([]int64, error) {
+	// SQL query to select the 'from_user_id' of likes WHERE:
+	// - The target user is the one being liked
+	// - The like status is 'LIKE'
+	// - There is no existing match between the liking user and the target user
+	query := `
+		SELECT l.from_user_id
+		FROM likes l
+		WHERE l.to_user_id = $1
+			AND status = 'LIKE'
+			AND NOT EXISTS (
+				SELECT 1
+				FROM matches m
+				WHERE (
+					(m.user1_id = l.from_user_id AND m.user2_id = l.to_user_id)
+					OR
+					(m.user1_id = l.to_user_id AND m.user2_id = l.from_user_id)
+				)
+			)
+	`
+	var fromUserIDs []int64
+	if err := r.db.Select(&fromUserIDs, query, toUserID); err != nil {
+		return nil, err
+	}
+	return fromUserIDs, nil
+}

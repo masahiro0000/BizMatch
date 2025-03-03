@@ -116,3 +116,28 @@ func (h *LikeHandler) Cancel(c *gin.Context) {
 
 	c.Redirect(http.StatusFound, "/users/detail/"+toUser.Username)
 }
+
+// ReceivedLikes handles the HTTP request for displaying the list of users who liked the current user.
+func (h *LikeHandler) ReceivedLikes(c *gin.Context) {
+	// Retrieve the current user from the session.
+	currentUser, err := util.GetCurrentUser(c)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/users/login")
+		return
+	}
+
+	// Call the usecase to get the list of users who have liked the current user.
+	users, err := h.likeUsecase.GetReceivedLikes(currentUser.ID)
+	if err != nil {
+		log.Printf("fail to GetReceivedLikes:%v", err)
+		c.HTML(http.StatusInternalServerError, "mypage.html", gin.H{
+			"user": currentUser,
+		})
+		return
+	}
+
+	c.HTML(http.StatusOK, "receive_likes.html", gin.H{
+		"user": currentUser,
+		"receive_like_users": users,
+	})
+}
