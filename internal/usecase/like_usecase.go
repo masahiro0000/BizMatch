@@ -20,10 +20,10 @@ func NewLikeUsecase(
 }
 
 // SendLike processes a like action from one user to another.
-func (u *LikeUsecase) SendLike(fromUserID, toUserID int64) error {
+func (u *LikeUsecase) Like(fromUserID, toUserID int64) error {
 	// Prevent a user from linking themselves.
 	if fromUserID == toUserID {
-		return domain.ErrSelfLike
+		return domain.ErrSelfLikeAndCancel
 	}
 
 	// Check if the like already exists.
@@ -31,14 +31,22 @@ func (u *LikeUsecase) SendLike(fromUserID, toUserID int64) error {
 	if err != nil {
 		return err
 	}
-	if existingLike != nil && existingLike.Status == "LIKE" {
-		return domain.ErrAlreadyLike
-	}
-
-	// Create a new like record.
-	err = u.likeRepo.CreateLike(fromUserID, toUserID, "LIKE")
-	if err != nil {
-		return err
+	// Existing like record found
+	if existingLike != nil {
+		// If the status is "LIKE", return an error the user has already liked target.
+		if existingLike.Status == "LIKE" {
+			return domain.ErrAlreadyLike
+		// If the status is "CANCEL", update the record to "LIKE" to re-enable like.
+		} else if existingLike.Status == "CANCEL" {
+			if err := u.likeRepo.UpdateLikeRecord(fromUserID, toUserID, "LIKE"); err != nil {
+				return err
+			}
+		}
+	// No existing like record found
+	} else {
+		if err := u.likeRepo.CreateLikeRecord(fromUserID, toUserID, "LIKE"); err != nil {
+			return err
+		}
 	}
 
 	// Check if the target user has already liked the current user.
@@ -65,6 +73,36 @@ func (u *LikeUsecase) SendLike(fromUserID, toUserID int64) error {
 		// Create a new match since both users have liked each other.
 		err = u.matchRepo.CreateMatch(user1ID, user2ID, "ACTIVE")
 		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (u *LikeUsecase) Cancel(fromUserID, toUserID int64) error {
+	// Prevent a user from canceling themselves.
+	if fromUserID == toUserID {
+		return domain.ErrSelfLikeAndCancel
+	}
+
+	// Returning the existing like record between the two users from the repository.
+	existingLike, err  := u.likeRepo.GetLike(fromUserID, toUserID)
+	if err != nil {
+		return err
+	}
+	if existingLike != nil {
+		// If the like record already has a "CANCEL" status, it means the like is already canceled.
+		if existingLike.Status == "CANCEL" {
+			return domain.ErrAlreadyCancel
+		// If the record is currently a "LIKE", update it to "CANCEL" to reflect the cancellation.
+		} else if existingLike.Status == "LIKE" {
+			if err := u.likeRepo.UpdateLikeRecord(fromUserID, toUserID, "CANCEL"); err != nil {
+				return err
+			}
+		}
+	} else {
+		// If no like record exists, create a new record with a "CANCEL" status.
+		if err := u.likeRepo.CreateLikeRecord(fromUserID, toUserID, "CANCEL"); err != nil {
 			return err
 		}
 	}
