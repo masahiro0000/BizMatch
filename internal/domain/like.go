@@ -23,4 +23,5 @@ var (
 	ErrGetUserInfoFailed = errors.New("ユーザー情報の取得に失敗しました。ユーザー検索からやり直してください。")
 	ErrSendLikeFailed = errors.New("いいね送信に失敗しました")
 	ErrCancelLikeNotFound = errors.New("キャンセル対象のいいねが存在しないか、既にキャンセルされています")
+	ErrCannotCancelAfterMatch = errors.New("マッチング成立後はいいねをキャンセルできません")
 )

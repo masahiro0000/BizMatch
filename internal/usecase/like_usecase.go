@@ -88,6 +88,19 @@ func (u *LikeUsecase) Cancel(fromUserID, toUserID int64) error {
 		return domain.ErrSelfLikeAndCancel
 	}
 
+	// After the match has been created, cannot change like status to "cancel".
+	user1ID, user2ID := fromUserID, toUserID
+	if user1ID > user2ID {
+		user1ID, user2ID = user2ID, user1ID
+	}
+	existingMatch, err := u.matchRepo.GetMatch(user1ID, user2ID)
+	if err != nil {
+		return err
+	}
+	if existingMatch != nil {
+		return domain.ErrCannotCancelAfterMatch
+	}
+
 	// Returning the existing like record between the two users from the repository.
 	existingLike, err  := u.likeRepo.GetLike(fromUserID, toUserID)
 	if err != nil {
