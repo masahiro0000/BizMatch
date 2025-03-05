@@ -15,4 +15,7 @@ type Match struct {
 }
 
 // Predefined errors related to match functionality.
-var ErrAlreadyMatch = errors.New("既にマッチしています")
+var (
+	ErrAlreadyMatch = errors.New("既にマッチしています")
+	ErrCannotGetMatchList = errors.New("マッチしているユーザー一覧を取得できませんでした")
+)
