@@ -20,6 +20,7 @@ type Router struct {
 // NewRouter creates and configures a new router instance
 func NewRouter(
 	userHandler *handler.UserHandler, apiHandler *handler.ApiHandler, likeHandler *handler.LikeHandler,
+	matchHandler *handler.MatchHandler,
 	) *Router {
 	r := gin.Default()
 
@@ -48,6 +49,10 @@ func NewRouter(
 
 	// Routing for like-related function.
 	LikeRouter(userGroup, likeHandler)
+
+	// Routing for match-related function.
+	matchGroup := r.Group("/match")
+	MatchRouter(matchGroup, matchHandler)
 
 	//Initialize api endpoint.
 	apiGroup := r.Group("/api")
