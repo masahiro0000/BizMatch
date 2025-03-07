@@ -6,5 +6,9 @@ import (
 )
 
 func MatchRouter(rg *gin.RouterGroup, matchHandler *handler.MatchHandler) {
+	// Route for matching list.
 	rg.GET("/list", matchHandler.ListMatches)
+
+	// Route for message display.
+	rg.GET("/:matchID/message", matchHandler.ShowMatchMessage)
 }

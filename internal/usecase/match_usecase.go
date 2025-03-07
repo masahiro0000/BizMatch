@@ -17,3 +17,7 @@ func NewMatchUsecase(mr domain.MatchRepository) *MatchUsecase{
 func (u *MatchUsecase) ListMatch(userID int64) ([]*domain.Match, error) {
 	return u.matchRepo.GetMatchByUserID(userID)
 }
+
+func (u *MatchUsecase) GetMatchByID(matchID int64) (*domain.Match, error) {
+	return u.matchRepo.GetMatchByID(matchID)
+}
