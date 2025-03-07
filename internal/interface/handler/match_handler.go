@@ -3,6 +3,7 @@ package handler
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/masahiro0000/BizMatch/internal/domain"
@@ -44,6 +45,7 @@ func (h *MatchHandler) ListMatches(c *gin.Context) {
 	}
 
 	var matchedUsers []interface{}
+	var matchIDs []int64
 	for _, match := range matches {
 		var otherUserID int64
 		if match.User1ID == userID {
@@ -59,9 +61,38 @@ func (h *MatchHandler) ListMatches(c *gin.Context) {
 			continue
 		}
 		matchedUsers = append(matchedUsers, user)
+		matchIDs = append(matchIDs, match.ID)
 	}
 
 	c.HTML(http.StatusOK, "match_list.html", gin.H{
 		"matchedUsers": matchedUsers,
+		"matchIDs": matchIDs,
+	})
+}
+
+func (h *MatchHandler) ShowMatchMessage(c *gin.Context) {
+	// Retrieve the current user from the session.
+	currentUser, err := util.GetCurrentUser(c)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/users/login")
+		return
+	}
+
+	// Parse the target match ID from the URL parameter.
+	matchIDStr := c.Param("matchID")
+	matchID, _ := strconv.ParseInt(matchIDStr, 10, 64)
+
+	// Retrieve the match with the match ID.
+	match, err := h.userUsecase.GetUserByID(matchID)
+	if err != nil {
+		c.HTML(http.StatusBadRequest, "mypage.html", gin.H{
+			"user": currentUser,
+		})
+		return
+	}
+
+	c.HTML(http.StatusOK, "message.html", gin.H{
+		"user": currentUser,
+		"match": match,
 	})
 }
