@@ -54,15 +54,15 @@ func (r *matchRepositoryImpl) GetMatch(user1ID, user2ID int64) (*domain.Match, e
 
 // GetMatchByID retrieves the match with match ID.
 func (r *matchRepositoryImpl) GetMatchByID(matchID int64) (*domain.Match, error) {
-	var match *domain.Match
+	var match domain.Match
 	query := `
 		SELECT * FROM matches
 		WHERE id = $1`
-	err := r.db.Select(&match, query, matchID)
+	err := r.db.Get(&match, query, matchID)
 	if err != nil {
 		return nil, err
 	}
-	return match, nil
+	return &match, nil
 }
 
 // GetMatchByUserID retrieves the match with user ID.
