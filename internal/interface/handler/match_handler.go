@@ -83,8 +83,9 @@ func (h *MatchHandler) ShowMatchMessage(c *gin.Context) {
 	matchID, _ := strconv.ParseInt(matchIDStr, 10, 64)
 
 	// Retrieve the match with the match ID.
-	match, err := h.userUsecase.GetUserByID(matchID)
+	match, err := h.matchUsecase.GetMatchByID(matchID)
 	if err != nil {
+		log.Printf("fail to get match by ID:%v", err)
 		c.HTML(http.StatusBadRequest, "mypage.html", gin.H{
 			"user": currentUser,
 		})

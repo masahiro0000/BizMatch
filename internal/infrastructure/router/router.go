@@ -9,6 +9,8 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/masahiro0000/BizMatch/internal/interface/handler"
+	"github.com/masahiro0000/BizMatch/internal/usecase"
+	"github.com/masahiro0000/BizMatch/internal/websocket"
 )
 
 // Router encapsulates the Gin engine and the HTTP server
@@ -20,7 +22,7 @@ type Router struct {
 // NewRouter creates and configures a new router instance
 func NewRouter(
 	userHandler *handler.UserHandler, apiHandler *handler.ApiHandler, likeHandler *handler.LikeHandler,
-	matchHandler *handler.MatchHandler,
+	matchHandler *handler.MatchHandler, messageUsecase *usecase.MessageUsecase,
 	) *Router {
 	r := gin.Default()
 
@@ -53,6 +55,11 @@ func NewRouter(
 	// Routing for match-related function.
 	matchGroup := r.Group("/match")
 	MatchRouter(matchGroup, matchHandler)
+
+	// Routing for sending message.
+	hub := websocket.NewHub()
+	go hub.Run()
+	WebSocketRouter(r, hub, messageUsecase)
 
 	//Initialize api endpoint.
 	apiGroup := r.Group("/api")
