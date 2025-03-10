@@ -10,5 +10,8 @@ func MatchRouter(rg *gin.RouterGroup, matchHandler *handler.MatchHandler) {
 	rg.GET("/list", matchHandler.ListMatches)
 
 	// Route for message display.
-	rg.GET("/:matchID/message", matchHandler.ShowMatchMessage)
+	rg.GET("/:match_id/message", matchHandler.ShowMatchMessage)
+
+	// Route for getting messages.
+	rg.GET("/:match_id/messages", matchHandler.GetMessages)
 }

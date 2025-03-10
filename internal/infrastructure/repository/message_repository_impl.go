@@ -31,3 +31,18 @@ func (r *messageRepositoryImpl) CreateMessage(matchID, fromUserID int64, content
 	}
 	return nil
 }
+
+// GetMessagesByMatchID retrieves messages with the match ID.
+func (r *messageRepositoryImpl) GetMessagesByMatchID(matchID int64) ([]domain.Message, error) {
+	var messages []domain.Message
+
+	query := `
+		SELECT * FROM messages
+		WHERE match_id = $1
+		ORDER BY created_at ASC
+	`
+	if err := r.db.Select(&messages, query, matchID); err != nil {
+		return nil, err
+	}
+	return messages, nil
+}
