@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
@@ -14,12 +15,14 @@ import (
 type MatchHandler struct {
 	matchUsecase *usecase.MatchUsecase
 	userUsecase *usecase.UserUsecase
+	msgUsecase *usecase.MessageUsecase
 }
 
-func NewMatchHandler(mu *usecase.MatchUsecase, uu *usecase.UserUsecase) *MatchHandler {
+func NewMatchHandler(mu *usecase.MatchUsecase, uu *usecase.UserUsecase, msgu *usecase.MessageUsecase) *MatchHandler {
 	return &MatchHandler{
 		matchUsecase: mu,
 		userUsecase: uu,
+		msgUsecase: msgu,
 	}
 }
 
@@ -79,7 +82,7 @@ func (h *MatchHandler) ShowMatchMessage(c *gin.Context) {
 	}
 
 	// Parse the target match ID from the URL parameter.
-	matchIDStr := c.Param("matchID")
+	matchIDStr := c.Param("match_id")
 	matchID, _ := strconv.ParseInt(matchIDStr, 10, 64)
 
 	// Retrieve the match with the match ID.
@@ -92,8 +95,50 @@ func (h *MatchHandler) ShowMatchMessage(c *gin.Context) {
 		return
 	}
 
+	// Convert the data to JSON format.
+	matchJSON, err := json.Marshal(match)
+	if err != nil {
+		log.Printf("fail to json:%v", err)
+		return
+	}
+	currentUserJSON, err := json.Marshal(currentUser)
+	if err != nil {
+		log.Printf("fail to json:%v", err)
+		return
+	}
+
 	c.HTML(http.StatusOK, "message.html", gin.H{
 		"user": currentUser,
-		"match": match,
+		"match": string(matchJSON),
+		"userJSON": string(currentUserJSON),
 	})
+}
+
+func (h *MatchHandler) GetMessages(c *gin.Context) {
+	log.Printf("first log")
+	// Retrieve the current user from the session.
+	currentUser, err := util.GetCurrentUser(c)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/users/login")
+		return
+	}
+	fromUserID := currentUser.ID
+
+	// Get the match ID from the parameter.
+	matchIDStr := c.Param("match_id")
+	matchID, err := strconv.ParseInt(matchIDStr, 10, 64)
+	if err != nil {
+		log.Printf("fail to parse matchID:%v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid matchID"})
+		return
+	}
+
+	// Retrieve messages for the specified match ID and user ID.
+	messages, err := h.msgUsecase.GetMessages(matchID, fromUserID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, messages)
 }

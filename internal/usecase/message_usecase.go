@@ -42,3 +42,26 @@ func (u *MessageUsecase) SendMessage(matchID, fromUserID int64, content string) 
 	}
 	return nil
 }
+
+func (u *MessageUsecase) GetMessages(matchID, fromUserID int64) ([]domain.Message, error) {
+	// Retrieve the match details using the provided match ID.
+	match, err := u.matchRepo.GetMatchByID(matchID)
+	if err != nil {
+		return nil, err
+	}
+	// Check if the match exist.
+	if match == nil {
+		return nil, domain.ErrMatchNotExist
+	}
+	// Verify that the requesting user is a participant in the match.
+	if match.User1ID != fromUserID && match.User2ID != fromUserID {
+		return nil, domain.ErrUserNotRelatedMatch
+	}
+
+	// Retrieve all messages associated with the match.
+	messages, err := u.messageRepo.GetMessagesByMatchID(matchID)
+	if err != nil {
+		return nil, err
+	}
+	return messages, nil
+}

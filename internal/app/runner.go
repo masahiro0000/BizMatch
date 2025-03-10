@@ -50,16 +50,17 @@ func Run() error {
 	// Initialize match functionality
 	matchRepo := repository.NewMatchRepositoryImpl(dbConn)
 	matchUsecase := usecase.NewMatchUsecase(matchRepo)
-	matchHandler := handler.NewMatchHandler(matchUsecase, userUsecase)
+
+	// Initialize message functionality
+	messageRepo := repository.NewMessageRepositoryImpl(dbConn)
+	messageUsecase := usecase.NewMessageUsecase(messageRepo, matchRepo)
+
+	matchHandler := handler.NewMatchHandler(matchUsecase, userUsecase, messageUsecase)
 
 	// Initialize like functionality
 	likeRepo := repository.NewLikeRepositoryImpl(dbConn)
 	likeUsecase := usecase.NewLikeUsecase(likeRepo, matchRepo, userRepo)
 	likeHandler := handler.NewLikeHandler(likeUsecase, userUsecase)
-
-	// Initialize message functionality
-	messageRepo := repository.NewMessageRepositoryImpl(dbConn)
-	messageUsecase := usecase.NewMessageUsecase(messageRepo, matchRepo)
 
 	// Create a new router instance
 	r := router.NewRouter(userHandler, apiHandler, likeHandler, matchHandler, messageUsecase)
