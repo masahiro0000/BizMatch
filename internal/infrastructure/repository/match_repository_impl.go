@@ -33,6 +33,21 @@ func (r *matchRepositoryImpl) CreateMatch(user1ID, user2ID int64, status string)
 	return nil
 }
 
+// UpdateMatchStatus updates the status of a match record in the database.
+func (r *matchRepositoryImpl) UpdateMatchStatus(matchID int64, status string) error {
+	now := time.Now()
+	query := `
+		UPDATE matches
+		SET status = $1, updated_at = $2
+		WHERE id = $3
+	`
+	_, err := r.db.Exec(query, status, now, matchID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetMatch retrieves a match record from the database based on user IDs.
 func (r *matchRepositoryImpl) GetMatch(user1ID, user2ID int64) (*domain.Match, error) {
 	var m domain.Match

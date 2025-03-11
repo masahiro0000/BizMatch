@@ -142,3 +142,30 @@ func (h *MatchHandler) GetMessages(c *gin.Context) {
 
 	c.JSON(http.StatusOK, messages)
 }
+
+func (h *MatchHandler) BlockMatch(c *gin.Context) {
+	// Retrieve the current user from the session.
+	_, err := util.GetCurrentUser(c)
+	if err != nil {
+		c.Redirect(http.StatusFound, "/users/login")
+		return
+	}
+
+	// Get the match ID from the parameter.
+	matchIDStr := c.Param("match_id")
+	matchID, err := strconv.ParseInt(matchIDStr, 10, 64)
+	if err != nil {
+		log.Printf("fail to parse matchID:%v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid matchID"})
+		return
+	}
+
+	// Update the status of the match.
+	if err := h.matchUsecase.UpdateMatchStatus(matchID, "BLOCKED"); err != nil {
+		log.Printf("fail to update match status:%v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/match/list")
+}
