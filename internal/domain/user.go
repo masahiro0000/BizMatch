@@ -40,6 +40,12 @@ type UserSearchFilter struct {
 	ExcludeUserID	*int64
 }
 
+// ScoredUser represents a user with a calculated score based on the current user's information.
+type ScoredUser struct {
+	User *User
+	Score int
+}
+
 var (
 	ErrInvalidInput		 	= errors.New("入力内容が不正です")
 	ErrPasswordTooShort  	= errors.New("パスワードは8文字以上必要です")

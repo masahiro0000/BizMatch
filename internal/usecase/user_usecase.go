@@ -3,6 +3,7 @@ package usecase
 import (
 	"errors"
 	"log"
+	"sort"
 
 	"github.com/gin-gonic/gin"
 	"github.com/masahiro0000/BizMatch/internal/domain"
@@ -142,4 +143,69 @@ func (u *UserUsecase) GetUserByID(userID int64) (*domain.User, error) {
 		return nil, err
 	}
 	return user, nil
+}
+
+// GetRecommendedUsers retrieves all users except the user with the provided ID.
+func (u *UserUsecase) GetRecommendedUsers(userID int64) ([]*domain.User, error) {
+	var candidates []*domain.User
+	// Retrieve all users from the repository.
+	allUsers, err := u.userRepo.GetAllUsers()
+	if err != nil {
+		return nil, err
+	}
+
+	// Exclude the user with the provided ID from the list of candidates.
+	for _, user := range allUsers {
+		if user.ID == userID {
+			continue
+		} else {
+			candidates = append(candidates, user)
+		}
+	}
+	return candidates, nil
+}
+
+// ScoreUsers calculates the score for each candidate user based on the current user's information.
+func (u *UserUsecase) ScoreUsers(currentUser *domain.User, candidates []*domain.User) []*domain.ScoredUser {
+	var scoredUsers []*domain.ScoredUser
+
+	// Calculate the score for each candidate user.
+	for _, candidate := range candidates {
+		score := 0
+		// Compare the user's information with the candidate's information.
+		if *currentUser.Prefecture == *candidate.Prefecture {
+			score += 6
+		}
+		if *currentUser.Industry == *candidate.Industry {
+			score += 5
+		}
+		if *currentUser.Job == *candidate.Job {
+			score += 4
+		}
+		if *currentUser.Position == *candidate.Position {
+			score += 3
+		}
+		if GetAgeGroup(*currentUser.Age) == GetAgeGroup(*candidate.Age) {
+			score += 2
+		}
+		if *currentUser.Gender == *candidate.Gender {
+			score += 1
+		}
+		log.Printf("Scored user: %v, score: %d", candidate, score)
+		scoredUsers = append(scoredUsers, &domain.ScoredUser{
+			User: candidate,
+			Score: score,
+		})
+	}
+
+	// Sort the scored users by score in descending order.
+	sort.Slice(scoredUsers, func(i, j int) bool {
+		return scoredUsers[i].Score > scoredUsers[j].Score
+	})
+
+	return scoredUsers
+}
+
+func GetAgeGroup(age int64) int64 {
+	return age / 10
 }
