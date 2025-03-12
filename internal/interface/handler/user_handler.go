@@ -129,8 +129,19 @@ func (h *UserHandler) ShowMypage(c *gin.Context) {
 		return
 	}
 
+	// Get the candidate users for the current user.
+	candidates, err := h.userUsecase.GetRecommendedUsers(currentUser.ID)
+	if err != nil {
+		log.Printf("Fail to get candidate users. error:%v", err)
+		c.HTML(http.StatusInternalServerError, "mypage.html", gin.H{
+			"user": currentUser,
+		})
+	}
+	// Score the candidate users based on the current user's preferences.
+	var scoredUser = h.userUsecase.ScoreUsers(currentUser, candidates)
 	c.HTML(http.StatusOK, "mypage.html", gin.H{
 		"user": currentUser,
+		"recommendedUsers": scoredUser,
 	})
 }
 

@@ -39,6 +39,17 @@ func (r *userRepositoryImpl) CreateUser(user *domain.User) error {
 	return nil
 }
 
+// GetAllUsers retrieves all users from the database.
+func (r *userRepositoryImpl) GetAllUsers() ([]*domain.User, error) {
+	var users []*domain.User
+	query := "SELECT * FROM users"
+
+	if err := r.db.Select(&users, query); err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
 // GetUserByID retrieve a user from the database based on user ID.
 func (r *userRepositoryImpl) GetUserByID(userID int64) (*domain.User, error) {
 	var user domain.User
