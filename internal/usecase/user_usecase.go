@@ -12,11 +12,13 @@ import (
 
 type UserUsecase struct {
 	userRepo domain.UserRepository
+	likeRepo domain.LikeRepository
 }
 
-func NewUserUsecase(repo domain.UserRepository) *UserUsecase {
+func NewUserUsecase(userRepo domain.UserRepository, likeRepo domain.LikeRepository) *UserUsecase {
 	return &UserUsecase{
-		userRepo: repo,
+		userRepo: userRepo,
+		likeRepo: likeRepo,
 	}
 }
 
@@ -154,13 +156,28 @@ func (u *UserUsecase) GetRecommendedUsers(userID int64) ([]*domain.User, error) 
 		return nil, err
 	}
 
-	// Exclude the user with the provided ID from the list of candidates.
+	// Retrieve the IDs of users who have liked the current user.
+	likedUserIDs, err := u.likeRepo.GetToUserIDsWhoLiked(userID)
+	if err != nil {
+		likedUserIDs = []int64{}
+	}
+
+	// Create a map of liked user IDs for faster lookup.
+	likedMap := make(map[int64]bool)
+	for _, id := range likedUserIDs {
+		likedMap[id] = true
+	}
+
 	for _, user := range allUsers {
+		// Exclude the user with the provided ID from the list of candidates.
 		if user.ID == userID {
 			continue
-		} else {
-			candidates = append(candidates, user)
 		}
+		// Exclude users who have already liked the current user.
+		if likedMap[user.ID] {
+			continue
+		}
+		candidates = append(candidates, user)
 	}
 	return candidates, nil
 }
@@ -191,7 +208,6 @@ func (u *UserUsecase) ScoreUsers(currentUser *domain.User, candidates []*domain.
 		if *currentUser.Gender == *candidate.Gender {
 			score += 1
 		}
-		log.Printf("Scored user: %v, score: %d", candidate, score)
 		scoredUsers = append(scoredUsers, &domain.ScoredUser{
 			User: candidate,
 			Score: score,
