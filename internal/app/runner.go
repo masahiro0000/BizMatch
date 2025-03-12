@@ -37,11 +37,6 @@ func Run() error {
 	// Register the User struct with the gob package to enable session storage.
 	gob.Register(&domain.User{})
 
-	// Initialize user-related functionality
-	userRepo := repository.NewUserRepositoryImpl(dbConn)
-	userUsecase := usecase.NewUserUsecase(userRepo)
-	userHandler := handler.NewUserHandler(userUsecase)
-
 	// Initialize api functionality
 	apiRepo := repository.NewApiRepositoryImpl(dbConn)
 	apiUsecase := usecase.NewApiUsecase(apiRepo)
@@ -55,12 +50,18 @@ func Run() error {
 	messageRepo := repository.NewMessageRepositoryImpl(dbConn)
 	messageUsecase := usecase.NewMessageUsecase(messageRepo, matchRepo)
 
-	matchHandler := handler.NewMatchHandler(matchUsecase, userUsecase, messageUsecase)
-
 	// Initialize like functionality
 	likeRepo := repository.NewLikeRepositoryImpl(dbConn)
+
+	// Initialize user-related functionality
+	userRepo := repository.NewUserRepositoryImpl(dbConn)
+	userUsecase := usecase.NewUserUsecase(userRepo, likeRepo)
+	userHandler := handler.NewUserHandler(userUsecase)
+
 	likeUsecase := usecase.NewLikeUsecase(likeRepo, matchRepo, userRepo)
 	likeHandler := handler.NewLikeHandler(likeUsecase, userUsecase)
+
+	matchHandler := handler.NewMatchHandler(matchUsecase, userUsecase, messageUsecase)
 
 	// Create a new router instance
 	r := router.NewRouter(userHandler, apiHandler, likeHandler, matchHandler, messageUsecase)
