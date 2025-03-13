@@ -12,8 +12,6 @@ import (
 	"github.com/masahiro0000/BizMatch/internal/domain"
 )
 
-// var domain.ErrUserNotFound = errors.New("ユーザーが見つかりません")
-
 type userRepositoryImpl struct {
 	db *sqlx.DB
 }
