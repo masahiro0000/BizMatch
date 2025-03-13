@@ -12,8 +12,6 @@ import (
 	"github.com/masahiro0000/BizMatch/internal/domain"
 )
 
-var ErrUserNotFound = errors.New("ユーザーが見つかりません")
-
 type userRepositoryImpl struct {
 	db *sqlx.DB
 }
@@ -73,7 +71,7 @@ func (r *userRepositoryImpl) GetUserByUsername(username string) (*domain.User, e
 	if err := r.db.Get(&user, query, username); err != nil {
 		// If no rows are returned, return an error indicated the user was not found.
 		if err == sql.ErrNoRows {
-			return nil, ErrUserNotFound
+			return nil, domain.ErrUserNotFound
 		}
 		return nil, err
 	}

@@ -53,6 +53,7 @@ var (
 	ErrIncorrectPassword 	= errors.New("パスワードが一致しません")
 	ErrOldPasswordMismatch	= errors.New("古いパスワードが一致しません")
 	ErrNewPasswordMismatch	= errors.New("新しいパスワードが一致しません")
+	ErrUserNotFound			= errors.New("ユーザーが見つかりません")
 )
 
 // Create a new user instance by validating the inputs and hashing the password.

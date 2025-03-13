@@ -11,7 +11,6 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/masahiro0000/BizMatch/internal/domain"
-	"github.com/masahiro0000/BizMatch/internal/infrastructure/repository"
 	"github.com/masahiro0000/BizMatch/internal/interface/handler/util"
 	"github.com/masahiro0000/BizMatch/internal/usecase"
 )
@@ -78,7 +77,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 		var status int
 		// Adjust the HTTP status code according to the type of error.
 		switch {
-		case errors.Is(err, repository.ErrUserNotFound) || errors.Is(err, domain.ErrIncorrectPassword):
+		case errors.Is(err, domain.ErrUserNotFound) || errors.Is(err, domain.ErrIncorrectPassword):
 			status = http.StatusBadRequest
 		default:
 			status = http.StatusInternalServerError
