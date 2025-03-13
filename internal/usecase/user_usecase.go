@@ -189,23 +189,35 @@ func (u *UserUsecase) ScoreUsers(currentUser *domain.User, candidates []*domain.
 	for _, candidate := range candidates {
 		score := 0
 		// Compare the user's information with the candidate's information.
-		if *currentUser.Prefecture == *candidate.Prefecture {
-			score += 6
+		if currentUser.Prefecture != nil && candidate.Prefecture != nil {
+			if *currentUser.Prefecture == *candidate.Prefecture {
+				score += 6
+			}
 		}
-		if *currentUser.Industry == *candidate.Industry {
-			score += 5
+		if currentUser.Industry != nil && candidate.Industry != nil {
+			if *currentUser.Industry == *candidate.Industry {
+				score += 5
+			}
 		}
-		if *currentUser.Job == *candidate.Job {
-			score += 4
+		if currentUser.Job != nil && candidate.Job != nil {
+			if *currentUser.Job == *candidate.Job {
+				score += 4
+			}
 		}
-		if *currentUser.Position == *candidate.Position {
-			score += 3
+		if currentUser.Position != nil && candidate.Position != nil {
+			if *currentUser.Position == *candidate.Position {
+				score += 3
+			}
 		}
-		if GetAgeGroup(*currentUser.Age) == GetAgeGroup(*candidate.Age) {
-			score += 2
+		if currentUser.Age != nil && candidate.Age != nil {
+			if GetAgeGroup(*currentUser.Age) == GetAgeGroup(*candidate.Age) {
+				score += 2
+			}
 		}
-		if *currentUser.Gender == *candidate.Gender {
-			score += 1
+		if currentUser.Gender != nil && candidate.Gender != nil {
+			if *currentUser.Gender == *candidate.Gender {
+				score += 1
+			}
 		}
 		scoredUsers = append(scoredUsers, &domain.ScoredUser{
 			User: candidate,
