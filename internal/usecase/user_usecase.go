@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/masahiro0000/BizMatch/internal/domain"
-	"github.com/masahiro0000/BizMatch/internal/infrastructure/repository"
 )
 
 type UserUsecase struct {
@@ -59,8 +58,8 @@ func (u *UserUsecase) Login(c *gin.Context, username, password string) (*domain.
 	if err != nil {
 		// Return different error message based on the type of error encountered.
 		switch {
-		case errors.Is(err, repository.ErrUserNotFound):
-			return nil, repository.ErrUserNotFound
+		case errors.Is(err, domain.ErrUserNotFound):
+			return nil, domain.ErrUserNotFound
 		default:
 			return nil, errors.New("ログイン中にエラーが発生しました")
 		}
