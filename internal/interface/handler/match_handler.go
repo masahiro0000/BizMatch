@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/masahiro0000/BizMatch/internal/domain"
 	"github.com/masahiro0000/BizMatch/internal/interface/handler/util"
 	"github.com/masahiro0000/BizMatch/internal/usecase"
 )
@@ -40,9 +39,8 @@ func (h *MatchHandler) ListMatches(c *gin.Context) {
 	// Get the match record for the current user.
 	matches, err := h.matchUsecase.ListMatch(userID)
 	if err != nil {
-		log.Printf("fail to get ListMatch:%v", err)
 		c.HTML(http.StatusInternalServerError, "mypage.html", gin.H{
-			"error": domain.ErrCannotGetMatchList,
+			"error": err,
 		})
 		return
 	}
@@ -60,7 +58,6 @@ func (h *MatchHandler) ListMatches(c *gin.Context) {
 		user, err := h.userUsecase.GetUserByID(otherUserID)
 		if err != nil {
 			// Skip if unable to retrieve user detail.
-			log.Printf("fail to get user by ID:%v", err)
 			continue
 		}
 		matchedUsers = append(matchedUsers, user)
@@ -88,7 +85,6 @@ func (h *MatchHandler) ShowMatchMessage(c *gin.Context) {
 	// Retrieve the match with the match ID.
 	match, err := h.matchUsecase.GetMatchByID(matchID)
 	if err != nil {
-		log.Printf("fail to get match by ID:%v", err)
 		c.HTML(http.StatusBadRequest, "mypage.html", gin.H{
 			"user": currentUser,
 		})
@@ -115,7 +111,6 @@ func (h *MatchHandler) ShowMatchMessage(c *gin.Context) {
 }
 
 func (h *MatchHandler) GetMessages(c *gin.Context) {
-	log.Printf("first log")
 	// Retrieve the current user from the session.
 	currentUser, err := util.GetCurrentUser(c)
 	if err != nil {
@@ -162,7 +157,6 @@ func (h *MatchHandler) BlockMatch(c *gin.Context) {
 
 	// Update the status of the match.
 	if err := h.matchUsecase.UpdateMatchStatus(matchID, "BLOCKED"); err != nil {
-		log.Printf("fail to update match status:%v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

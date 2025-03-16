@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -24,9 +23,8 @@ func (h *ApiHandler) GetPrefectures(c *gin.Context) {
 	// Call the use case to get prefecture data.
 	prefectures, err := h.apiUsecase.GetPrefectures()
 	if err != nil {
-		log.Printf("Fail to fetch prefectures in handler: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to get prefectures",
+			"error": err,
 		})
 		return
 	}
@@ -48,9 +46,8 @@ func (h *ApiHandler) GetIndustries(c *gin.Context) {
 	// Call the use case to get industry data.
 	industries, err := h.apiUsecase.GetIndustries()
 	if err != nil {
-		log.Printf("Fail to fetch industries in handler: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to get industries",
+			"error": err,
 		})
 		return
 	}
@@ -71,9 +68,8 @@ func (h *ApiHandler) GetJobs(c *gin.Context) {
 	// Call the use case to get job data.
 	jobs, err := h.apiUsecase.GetJobs()
 	if err != nil {
-		log.Printf("Fail to fetch jobs in handler: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to get jobs",
+			"error": err,
 		})
 		return
 	}
@@ -94,9 +90,8 @@ func (h *ApiHandler) GetPositions(c *gin.Context) {
 	// Call the use case to get position data.
 	positions, err := h.apiUsecase.GetPositions()
 	if err != nil {
-		log.Printf("Fail to fetch positions in handler: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to get positions",
+			"error": err,
 		})
 		return
 	}

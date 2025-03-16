@@ -116,14 +116,10 @@ func (h *UserHandler) Logout(c *gin.Context) {
 }
 
 func (h *UserHandler) ShowMypage(c *gin.Context) {
-	session := sessions.Default(c)
-
-	// Get the user data stored in the session.
-	user := session.Get("user")
-	currentUser, ok := user.(*domain.User)
-
-	// If no user is found in the session, redirect to the login page.
-	if !ok || currentUser == nil {
+	// Retrieve the current user from the session.
+	currentUser, err := util.GetCurrentUser(c)
+	if err != nil {
+		log.Printf("Fail to get current user: %v", err)
 		c.Redirect(http.StatusFound, "/users/login")
 		return
 	}
@@ -262,7 +258,6 @@ func (h *UserHandler) RegisterInfo(c *gin.Context) {
 
 	// Attempt to update the user's registration info.
 	if err := h.userUsecase.RegisterInfo(user); err != nil {
-		log.Printf("Fail to update user info in usecase. user ID:%d, error:%s", currentUser.ID, err)
 		c.HTML(http.StatusInternalServerError, "register_info.html", gin.H{
 			"user": user,
 			"ages": util.GenerateAgeList(),
@@ -305,7 +300,6 @@ func (h *UserHandler) UpdatePassword(c *gin.Context) {
 	// Attempt to update the user's password using the provided information.
 	err = h.userUsecase.UpdatePassword(currentUser.ID, oldPassword, newPassword, confirmPassword)
 	if err != nil {
-		log.Printf("Fail to update password. error:%v", err)
 		status := http.StatusInternalServerError
 
 		// If the error is related to the new password being too short, new password mismatches confirmation password or
@@ -443,7 +437,6 @@ func (h *UserHandler) ShowUserDetail(c *gin.Context) {
 	user, err := h.userUsecase.GetUserByUsername(username)
 	if err != nil {
 		c.String(http.StatusBadRequest, "ユーザーが見つかりません")
-		log.Printf("fail to get user by username. error:%v", err)
 		return
 	}
 

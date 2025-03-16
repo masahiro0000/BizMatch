@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"log"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -26,7 +27,11 @@ func (r *likeRepositoryImpl) CreateLikeRecord(fromUserID, toUserID int64, status
 		VALUES ($1, $2, $3, $4, $5)
 	`
 	_, err := r.db.Exec(query, fromUserID, toUserID, status, now, now)
-	return err
+	if err != nil {
+		log.Printf("fail to create like record: %v", err)
+		return err
+	}
+	return nil
 }
 
 // UpdateLikeRecord updates a record into the database.
@@ -38,7 +43,11 @@ func (r *likeRepositoryImpl) UpdateLikeRecord(fromUserID, toUserID int64, status
 		WHERE from_user_id = $3 AND to_user_id = $4
 	`
 	_, err := r.db.Exec(query, status, now, fromUserID, toUserID)
-	return err
+	if err != nil {
+		log.Printf("fail to update like record: %v", err)
+		return err
+	}
+	return nil
 }
 
 // GetLike retrieves a like record into the database.
@@ -53,8 +62,10 @@ func (r *likeRepositoryImpl) GetLike(fromUserID, toUserID int64) (*domain.Like, 
 	if err != nil {
 		// Return nil if no record is found.
 		if err == sql.ErrNoRows {
+			log.Printf("like record not found")
 			return nil, nil
 		}
+		log.Printf("fail to get like record: %v", err)
 		return nil, err
 	}
 	return &l, nil
@@ -83,6 +94,7 @@ func (r *likeRepositoryImpl) GetFromUserIDsWhoLiked(toUserID int64) ([]int64, er
 	`
 	var fromUserIDs []int64
 	if err := r.db.Select(&fromUserIDs, query, toUserID); err != nil {
+		log.Printf("fail to get from user IDs who liked: %v", err)
 		return nil, err
 	}
 	return fromUserIDs, nil

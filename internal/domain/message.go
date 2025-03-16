@@ -16,6 +16,7 @@ type Message struct {
 
 var (
 	ErrEmptyMessage = errors.New("メッセージが空です")
+	ErrGetMessageFailed = errors.New("メッセージの取得に失敗しました")
 	ErrMatchNotExist = errors.New("マッチが存在しません")
 	ErrUserNotRelatedMatch = errors.New("マッチに関係ないユーザーです")
 )

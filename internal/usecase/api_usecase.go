@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"log"
-
 	"github.com/masahiro0000/BizMatch/internal/domain"
 )
 
@@ -20,8 +18,7 @@ func NewApiUsecase(repo domain.ApiRepository) *ApiUsecase {
 func (u *ApiUsecase) GetPrefectures() ([]domain.Prefectures, error){
 	prefectures, err := u.apiRepo.GetPrefectures()
 	if err != nil {
-		log.Printf("Fail to fetch prefectures from repository: %v", err)
-		return nil, err
+		return nil, domain.ErrGetPrefecturesFailed
 	}
 	return prefectures, nil
 }
@@ -30,8 +27,7 @@ func (u *ApiUsecase) GetPrefectures() ([]domain.Prefectures, error){
 func (u *ApiUsecase) GetIndustries() ([]domain.Industries, error) {
 	industries, err := u.apiRepo.GetIndustries()
 	if err != nil {
-		log.Printf("Fail to fetch industries from repository: %v", err)
-		return nil, err
+		return nil, domain.ErrGetIndustriesFailed
 	}
 	return industries, nil
 }
@@ -40,8 +36,7 @@ func (u *ApiUsecase) GetIndustries() ([]domain.Industries, error) {
 func (u *ApiUsecase) GetJobs() ([]domain.Jobs, error) {
 	jobs, err := u.apiRepo.GetJobs()
 	if err != nil {
-		log.Printf("Fail to fetch jobs from repository: %v", err)
-		return nil, err
+		return nil, domain.ErrGetJobsFailed
 	}
 	return jobs, nil
 }
@@ -50,8 +45,7 @@ func (u *ApiUsecase) GetJobs() ([]domain.Jobs, error) {
 func (u *ApiUsecase) GetPositions() ([]domain.Positions, error) {
 	positions, err := u.apiRepo.GetPositions()
 	if err != nil {
-		log.Printf("Fail to fetch positions from repository: %v", err)
-		return nil, err
+		return nil, domain.ErrGetPositionsFailed
 	}
 	return positions, nil
 }

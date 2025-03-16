@@ -26,7 +26,7 @@ func (r *messageRepositoryImpl) CreateMessage(matchID, fromUserID int64, content
 	`
 	_, err := r.db.Exec(query, matchID, fromUserID, content, time.Now())
 	if err != nil {
-		log.Printf("createMessage")
+		log.Printf("Failed to create message: %v", err)
 		return err
 	}
 	return nil
@@ -42,6 +42,7 @@ func (r *messageRepositoryImpl) GetMessagesByMatchID(matchID int64) ([]domain.Me
 		ORDER BY created_at ASC
 	`
 	if err := r.db.Select(&messages, query, matchID); err != nil {
+		log.Printf("Failed to retrieve messages: %v", err)
 		return nil, err
 	}
 	return messages, nil

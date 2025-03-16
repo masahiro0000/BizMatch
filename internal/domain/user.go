@@ -2,6 +2,7 @@ package domain
 
 import (
 	"errors"
+	"log"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -53,18 +54,24 @@ var (
 	ErrIncorrectPassword 	= errors.New("パスワードが一致しません")
 	ErrOldPasswordMismatch	= errors.New("古いパスワードが一致しません")
 	ErrNewPasswordMismatch	= errors.New("新しいパスワードが一致しません")
-	ErrUserNotFound			= errors.New("ユーザーが見つかりません")
+	ErrUserNotFound			= errors.New("ユーザー名が正しくありません")
+	ErrSignupFailed			= errors.New("ユーザー登録に失敗しました")
+	ErrGetUserFailed		= errors.New("ユーザー情報の取得に失敗しました")
+	ErrRegisterInfoFailed	= errors.New("ユーザー情報の更新に失敗しました")
+	ErrUpdatePasswordFailed = errors.New("パスワードの更新に失敗しました")
 )
 
 // Create a new user instance by validating the inputs and hashing the password.
 func NewUser(username, displayName, password string) (*User, error) {
 	// Validate that the username and display name are not empty.
 	if username == "" || displayName == "" {
+		log.Printf("Validation failed for username and display name. username:%v ,display name:%v", username, displayName)
 		return nil, ErrInvalidInput
 	}
 
 	// Check if the password meets the minimum length requirement.
 	if len(password) < MinPasswordLength {
+		log.Printf("Password is too short. username:%v, display name:%v", username, displayName)
 		return nil, ErrPasswordTooShort
 	}
 
@@ -85,6 +92,7 @@ func NewUser(username, displayName, password string) (*User, error) {
 func HashPassword(password string) (string, error) {
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
+		log.Printf("Failed to hash password. error:%v", err)
 		return "", err
 	}
 	return string(hashedBytes), nil
@@ -94,7 +102,8 @@ func HashPassword(password string) (string, error) {
 func (u *User) VerifyPassword(password string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 	if err != nil {
-		return ErrIncorrectPassword
+		log.Printf("Password verification failed. username:%v, error:%v", u.Username, err)
+		return err
 	}
 	return nil
 }
