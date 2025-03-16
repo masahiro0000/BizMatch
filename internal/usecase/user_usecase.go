@@ -44,7 +44,7 @@ func (u *UserUsecase) Signup(c *gin.Context, username, displayName, password str
 		if errors.Is(err, domain.ErrUserAlreadyExists) {
 			return domain.ErrUserAlreadyExists
 		}
-		return err
+		return domain.ErrSignupFailed
 	}
 	return nil
 }
@@ -56,13 +56,7 @@ func (u *UserUsecase) Login(c *gin.Context, username, password string) (*domain.
 	// Attempt to retrieve the user by username from the repository.
 	user, err = u.userRepo.GetUserByUsername(username)
 	if err != nil {
-		// Return different error message based on the type of error encountered.
-		switch {
-		case errors.Is(err, domain.ErrUserNotFound):
-			return nil, domain.ErrUserNotFound
-		default:
-			return nil, errors.New("ログイン中にエラーが発生しました")
-		}
+		return nil, domain.ErrUserNotFound
 	}
 
 	// Verify the provided password against the user's stored credentials.
@@ -83,8 +77,7 @@ func (u *UserUsecase) RegisterInfo(user *domain.User) error {
 
 	// Attempt to update the user's info in the repository.
 	if err := u.userRepo.RegisterInfo(user); err != nil {
-		log.Printf("Failed to update user info in repository. user ID:%d, error:%v", user.ID, err)
-		return err
+		return domain.ErrRegisterInfoFailed
 	}
 	return nil
 }
@@ -93,7 +86,7 @@ func (u *UserUsecase) UpdatePassword(userID int64, oldPassword, newPassword, con
 	// Retrieve the user by ID from the repository.
 	user, err := u.userRepo.GetUserByID(userID)
 	if err != nil {
-		return err
+		return domain.ErrGetUserFailed
 	}
 
 	// Verify that the provided old password matches the user's current password.
@@ -114,26 +107,31 @@ func (u *UserUsecase) UpdatePassword(userID int64, oldPassword, newPassword, con
 	// Hash the new password for security.
 	hashedPassword, err := domain.HashPassword(newPassword)
 	if err != nil {
-		return err
+		return domain.ErrUpdatePasswordFailed
 	}
 
 	// Update the user's password in the repository with the hashed new password.
 	err = u.userRepo.UpdatePassword(user.ID, hashedPassword)
 	if err != nil {
-		return err
+		return domain.ErrUpdatePasswordFailed
 	}
 
 	return nil
 }
 
 func (u *UserUsecase) SearchUsers(filter *domain.UserSearchFilter) ([]*domain.User, error) {
-	return u.userRepo.SearchUsers(filter)
+	var users []*domain.User
+	users, err := u.userRepo.SearchUsers(filter)
+	if err != nil {
+		return nil, domain.ErrGetUserFailed
+	}
+	return users, nil
 }
 
 func (u *UserUsecase) GetUserByUsername(username string) (*domain.User, error) {
 	user, err := u.userRepo.GetUserByUsername(username)
 	if err != nil{
-		return nil, err
+		return nil, domain.ErrGetUserFailed
 	}
 	return user, nil
 }
@@ -141,7 +139,7 @@ func (u *UserUsecase) GetUserByUsername(username string) (*domain.User, error) {
 func (u *UserUsecase) GetUserByID(userID int64) (*domain.User, error) {
 	user, err := u.userRepo.GetUserByID(userID)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrGetUserFailed
 	}
 	return user, nil
 }
@@ -152,7 +150,7 @@ func (u *UserUsecase) GetRecommendedUsers(userID int64) ([]*domain.User, error) 
 	// Retrieve all users from the repository.
 	allUsers, err := u.userRepo.GetAllUsers()
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrGetUserFailed
 	}
 
 	// Retrieve the IDs of users who have liked the current user.

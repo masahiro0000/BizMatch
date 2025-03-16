@@ -32,7 +32,7 @@ func (u *LikeUsecase) Like(fromUserID, toUserID int64) error {
 	// Check if the like already exists.
 	existingLike, err := u.likeRepo.GetLike(fromUserID, toUserID)
 	if err != nil {
-		return err
+		return domain.ErrGetLikeFailed
 	}
 	// Existing like record found
 	if existingLike != nil {
@@ -42,20 +42,20 @@ func (u *LikeUsecase) Like(fromUserID, toUserID int64) error {
 		// If the status is "CANCEL", update the record to "LIKE" to re-enable like.
 		} else if existingLike.Status == "CANCEL" {
 			if err := u.likeRepo.UpdateLikeRecord(fromUserID, toUserID, "LIKE"); err != nil {
-				return err
+				return domain.ErrUpdateLikeFailed
 			}
 		}
 	// No existing like record found
 	} else {
 		if err := u.likeRepo.CreateLikeRecord(fromUserID, toUserID, "LIKE"); err != nil {
-			return err
+			return domain.ErrCreateLikeFailed
 		}
 	}
 
 	// Check if the target user has already liked the current user.
 	oppositeLike, err := u.likeRepo.GetLike(toUserID, fromUserID)
 	if err != nil {
-		return err
+		return domain.ErrGetLikeFailed
 	}
 	if oppositeLike != nil && oppositeLike.Status == "LIKE" {
 		// Order user IDs to ensure consistency and avoid duplicate matches.
@@ -67,7 +67,7 @@ func (u *LikeUsecase) Like(fromUserID, toUserID int64) error {
 		// Check if the match already exists.
 		existingMatch, err := u.matchRepo.GetMatch(user1ID, user2ID)
 		if err != nil {
-			return err
+			return domain.ErrCannotGetMatchList
 		}
 		if existingMatch != nil && existingMatch.Status == "ACTIVE" {
 			return domain.ErrAlreadyMatch
@@ -76,7 +76,7 @@ func (u *LikeUsecase) Like(fromUserID, toUserID int64) error {
 		// Create a new match since both users have liked each other.
 		err = u.matchRepo.CreateMatch(user1ID, user2ID, "ACTIVE")
 		if err != nil {
-			return err
+			return domain.ErrCreateMatchFailed
 		}
 	}
 	return nil
@@ -95,7 +95,7 @@ func (u *LikeUsecase) Cancel(fromUserID, toUserID int64) error {
 	}
 	existingMatch, err := u.matchRepo.GetMatch(user1ID, user2ID)
 	if err != nil {
-		return err
+		return domain.ErrGetMatchFailed
 	}
 	if existingMatch != nil {
 		return domain.ErrCannotCancelAfterMatch
@@ -104,7 +104,7 @@ func (u *LikeUsecase) Cancel(fromUserID, toUserID int64) error {
 	// Returning the existing like record between the two users from the repository.
 	existingLike, err  := u.likeRepo.GetLike(fromUserID, toUserID)
 	if err != nil {
-		return err
+		return domain.ErrGetLikeFailed
 	}
 	if existingLike != nil {
 		// If the like record already has a "CANCEL" status, it means the like is already canceled.
@@ -113,13 +113,13 @@ func (u *LikeUsecase) Cancel(fromUserID, toUserID int64) error {
 		// If the record is currently a "LIKE", update it to "CANCEL" to reflect the cancellation.
 		} else if existingLike.Status == "LIKE" {
 			if err := u.likeRepo.UpdateLikeRecord(fromUserID, toUserID, "CANCEL"); err != nil {
-				return err
+				return domain.ErrUpdateLikeFailed
 			}
 		}
 	} else {
 		// If no like record exists, create a new record with a "CANCEL" status.
 		if err := u.likeRepo.CreateLikeRecord(fromUserID, toUserID, "CANCEL"); err != nil {
-			return err
+			return domain.ErrCreateLikeFailed
 		}
 	}
 	return nil
@@ -130,7 +130,7 @@ func (u *LikeUsecase) GetReceivedLikes(toUserID int64) ([]*domain.User, error) {
 	// Retrieve the list of user IDs who have liked the target user.
 	fromUserIDs, err := u.likeRepo.GetFromUserIDsWhoLiked(toUserID)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrGetFromUserIDsFailed
 	}
 
 	var users []*domain.User
@@ -138,7 +138,7 @@ func (u *LikeUsecase) GetReceivedLikes(toUserID int64) ([]*domain.User, error) {
 	for _, fromUserID := range fromUserIDs {
 		user, err := u.userRepo.GetUserByID(fromUserID)
 		if err != nil {
-			return nil, err
+			return nil, domain.ErrGetUserFailed
 		}
 		users = append(users, user)
 	}

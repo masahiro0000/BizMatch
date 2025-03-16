@@ -18,4 +18,7 @@ type Match struct {
 var (
 	ErrAlreadyMatch = errors.New("既にマッチしています")
 	ErrCannotGetMatchList = errors.New("マッチしているユーザー一覧を取得できませんでした")
+	ErrCreateMatchFailed = errors.New("マッチ情報の作成に失敗しました")
+	ErrGetMatchFailed = errors.New("マッチ情報の取得に失敗しました")
+	ErrUpdateMatchFailed = errors.New("マッチ情報の更新に失敗しました")
 )

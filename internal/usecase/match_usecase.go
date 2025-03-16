@@ -19,7 +19,7 @@ func (u *MatchUsecase) ListMatch(userID int64) ([]*domain.Match, error) {
 	// Get all matches for the user.
 	MatchList, err := u.matchRepo.GetMatchByUserID(userID)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrGetMatchFailed
 	}
 
 	// Filter out blocked matches.
@@ -33,9 +33,18 @@ func (u *MatchUsecase) ListMatch(userID int64) ([]*domain.Match, error) {
 }
 
 func (u *MatchUsecase) GetMatchByID(matchID int64) (*domain.Match, error) {
-	return u.matchRepo.GetMatchByID(matchID)
+	var match *domain.Match
+	match, err := u.matchRepo.GetMatchByID(matchID)
+	if err != nil {
+		return nil, domain.ErrGetMatchFailed
+	}
+	return match, nil
 }
 
 func (u *MatchUsecase) UpdateMatchStatus(matchID int64, status string) error {
-	return u.matchRepo.UpdateMatchStatus(matchID, "BLOCKED")
+	err := u.matchRepo.UpdateMatchStatus(matchID, "BLOCKED")
+	if err != nil {
+		return domain.ErrUpdateMatchFailed
+	}
+	return nil
 }

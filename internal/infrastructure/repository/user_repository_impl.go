@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -27,6 +26,7 @@ func (r *userRepositoryImpl) CreateUser(user *domain.User) error {
 	_, err := r.db.Exec("INSERT INTO users (username, display_name, password) VALUES ($1, $2, $3)",
 						user.Username, user.DisplayName, user.Password)
 	if err != nil {
+		log.Printf("Failed to insert user. username:%v, display name:%v, error:%v", user.Username, user.DisplayName, err)
 		var pqErr *pq.Error
 		// Check if the error is a PostgreSQL error for duplicate entries.
 		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
@@ -43,6 +43,7 @@ func (r *userRepositoryImpl) GetAllUsers() ([]*domain.User, error) {
 	query := "SELECT * FROM users"
 
 	if err := r.db.Select(&users, query); err != nil {
+		log.Printf("Failed to get all users. error:%v", err)
 		return nil, err
 	}
 	return users, nil
@@ -55,6 +56,7 @@ func (r *userRepositoryImpl) GetUserByID(userID int64) (*domain.User, error) {
 
 	// Execute the SQL query using userID and map the result to the user variable.
 	if err := r.db.Get(&user, query, userID); err != nil {
+		log.Printf("Failed to get user by ID. userID:%v, error:%v", userID, err)
 		return nil, err
 	}
 
@@ -69,10 +71,8 @@ func (r *userRepositoryImpl) GetUserByUsername(username string) (*domain.User, e
 
 	// Execute the SQL query using username and map the result to the user variable.
 	if err := r.db.Get(&user, query, username); err != nil {
+		log.Printf("Failed to get user by username. username:%v, error:%v", username, err)
 		// If no rows are returned, return an error indicated the user was not found.
-		if err == sql.ErrNoRows {
-			return nil, domain.ErrUserNotFound
-		}
 		return nil, err
 	}
 
@@ -208,6 +208,7 @@ func (r *userRepositoryImpl) SearchUsers(filter *domain.UserSearchFilter) ([]*do
 	// Use sqlx.In to expand slice parameters (like IN clauses) into the query correctly.
 	expandedQuery, expandedArgs, err := sqlx.In(query, args...)
 	if err != nil {
+		log.Printf("Failed to expand query. query:%v, error:%v", query, err)
 		return nil, err
 	}
 
@@ -216,6 +217,7 @@ func (r *userRepositoryImpl) SearchUsers(filter *domain.UserSearchFilter) ([]*do
 	// Execute the query with the expanded arguments.
 	rows, err := r.db.Queryx(expandedQuery, expandedArgs...)
 	if err != nil {
+		log.Printf("Failed to search users. query:%v, error:%v", expandedQuery, err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -225,6 +227,7 @@ func (r *userRepositoryImpl) SearchUsers(filter *domain.UserSearchFilter) ([]*do
 	for rows.Next() {
 		var u domain.User
 		if err := rows.StructScan(&u); err != nil {
+			log.Printf("Failed to scan user. error:%v", err)
 			return nil, err
 		}
 		users = append(users, &u)

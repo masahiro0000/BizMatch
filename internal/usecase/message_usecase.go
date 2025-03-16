@@ -47,7 +47,7 @@ func (u *MessageUsecase) GetMessages(matchID, fromUserID int64) ([]domain.Messag
 	// Retrieve the match details using the provided match ID.
 	match, err := u.matchRepo.GetMatchByID(matchID)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrGetMatchFailed
 	}
 	// Check if the match exist.
 	if match == nil {
@@ -61,7 +61,7 @@ func (u *MessageUsecase) GetMessages(matchID, fromUserID int64) ([]domain.Messag
 	// Retrieve all messages associated with the match.
 	messages, err := u.messageRepo.GetMessagesByMatchID(matchID)
 	if err != nil {
-		return nil, err
+		return nil, domain.ErrGetMessageFailed
 	}
 	return messages, nil
 }

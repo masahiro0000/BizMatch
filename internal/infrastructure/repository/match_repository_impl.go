@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"log"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -28,6 +29,7 @@ func (r *matchRepositoryImpl) CreateMatch(user1ID, user2ID int64, status string)
 	`
 	_, err := r.db.Exec(query, user1ID, user2ID, status, now, now)
 	if err != nil {
+		log.Printf("fail to create match record: %v", err)
 		return err
 	}
 	return nil
@@ -43,6 +45,7 @@ func (r *matchRepositoryImpl) UpdateMatchStatus(matchID int64, status string) er
 	`
 	_, err := r.db.Exec(query, status, now, matchID)
 	if err != nil {
+		log.Printf("fail to update match record: %v", err)
 		return err
 	}
 	return nil
@@ -60,8 +63,10 @@ func (r *matchRepositoryImpl) GetMatch(user1ID, user2ID int64) (*domain.Match, e
 	if err != nil {
 		// Return nil if no record is found.
 		if err == sql.ErrNoRows {
+			log.Printf("no match record found")
 			return nil, nil
 		}
+		log.Printf("fail to get match record: %v", err)
 		return nil, err
 	}
 	return &m, nil
@@ -75,6 +80,7 @@ func (r *matchRepositoryImpl) GetMatchByID(matchID int64) (*domain.Match, error)
 		WHERE id = $1`
 	err := r.db.Get(&match, query, matchID)
 	if err != nil {
+		log.Printf("fail to get match record: %v", err)
 		return nil, err
 	}
 	return &match, nil
@@ -89,6 +95,7 @@ func (r *matchRepositoryImpl) GetMatchByUserID(userID int64) ([]*domain.Match, e
 	`
 	err := r.db.Select(&matches, query, userID)
 	if err != nil {
+		log.Printf("fail to get match record: %v", err)
 		return nil, err
 	}
 	return matches, nil

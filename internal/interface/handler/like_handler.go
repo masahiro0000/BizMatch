@@ -47,22 +47,20 @@ func (h *LikeHandler) Like(c *gin.Context) {
 	// Retrieve the user information.
 	toUser, err := h.userUsecase.GetUserByID(toUserID)
 	if err != nil {
-		log.Printf("fail to get user by ID:%v", err)
 		// Render an error message if user information retrieval fails.
 		c.HTML(http.StatusOK, "user_detail.html", gin.H{
 			"user": toUser,
-			"error": domain.ErrGetUserInfoFailed,
+			"error": err,
 		})
 		return
 	}
 
 	// Attempt to send a like using the business logic.
 	if err := h.likeUsecase.Like(fromUserID, toUserID); err != nil {
-		log.Printf("fail to send like: %v", err)
 		// Render an error message if sending the like fails.
 		c.HTML(http.StatusOK, "user_detail.html", gin.H{
 			"user": toUser,
-			"error": domain.ErrSendLikeFailed,
+			"error": err,
 		})
 		return
 	}
@@ -94,11 +92,10 @@ func (h *LikeHandler) Cancel(c *gin.Context) {
 	// Retrieve the user information.
 	toUser, err := h.userUsecase.GetUserByID(toUserID)
 	if err != nil {
-		log.Printf("fail to get user by ID:%v", err)
 		// Render an error message if user information retrieval fails.
 		c.HTML(http.StatusOK, "user_detail.html", gin.H{
 			"user": toUser,
-			"error": domain.ErrGetUserInfoFailed,
+			"error": err,
 		})
 		return
 	}
@@ -106,7 +103,6 @@ func (h *LikeHandler) Cancel(c *gin.Context) {
 	// Attempt to send a cancel using the business logic.
 	err = h.likeUsecase.Cancel(fromUserID, toUserID)
 	if err != nil {
-		log.Printf("fail to cancel like:%v", err)
 		c.HTML(http.StatusOK, "user_detail.html", gin.H{
 			"user": toUser,
 			"error": err,
@@ -129,7 +125,6 @@ func (h *LikeHandler) ReceivedLikes(c *gin.Context) {
 	// Call the usecase to get the list of users who have liked the current user.
 	users, err := h.likeUsecase.GetReceivedLikes(currentUser.ID)
 	if err != nil {
-		log.Printf("fail to GetReceivedLikes:%v", err)
 		c.HTML(http.StatusInternalServerError, "mypage.html", gin.H{
 			"user": currentUser,
 		})
